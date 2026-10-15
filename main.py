@@ -39,6 +39,8 @@ from systems.events import generate_random_event
 from engine.particles import ParticleManager
 from engine.visual_fx import ScreenShake
 from engine.sound import play_sfx
+from views.title_view import TitleView
+from views.load_game_view import LoadGameView
 from views.char_select_view import CharSelectView
 from views.combat_view import CombatView
 from views.map_view import MapView
@@ -48,6 +50,9 @@ from views.shop_view import ShopView
 from views.event_view import EventView
 from views.deck_view import DeckView
 from views.game_over_view import GameOverView
+from systems.save_manager import (
+    save_game, load_game, delete_save, get_first_empty_slot, get_latest_save_slot, has_any_save
+)
 
 class Game:
     def __init__(self):
@@ -69,17 +74,42 @@ class Game:
         self.particle_mgr = ParticleManager()
         self.screen_shake = ScreenShake()
 
-        # Start with Character Selection
-        self.show_char_select()
+        self.current_slot = 1
+        self.player = None
+        self.dungeon_map = None
+        self.current_act = 1
+        self.is_current_elite = False
+        self.is_current_boss = False
+        self.deck_overlay = None
 
-    def show_char_select(self):
+        # Start on Title Screen
+        self.show_title_screen()
+
+    def show_title_screen(self):
+        self.state = "TITLE"
+        self.title_view = TitleView()
+        self.current_view = self.title_view
+        self.deck_overlay = None
+
+    def show_load_game(self):
+        self.state = "LOAD_GAME"
+        self.load_game_view = LoadGameView()
+        self.current_view = self.load_game_view
+        self.deck_overlay = None
+
+    def show_char_select(self, target_slot: int = None):
+        if target_slot is None:
+            target_slot = get_first_empty_slot()
+        self.current_slot = target_slot
         self.state = "CHAR_SELECT"
-        self.char_select_view = CharSelectView()
+        self.char_select_view = CharSelectView(target_slot=self.current_slot)
         self.current_view = self.char_select_view
         self.deck_overlay = None
 
-    def start_run(self, char_id: str):
-        """Initializes a brand new run with the chosen character class."""
+    def start_run(self, char_id: str, slot_id: int = None):
+        """Initializes a brand new run with the chosen character class and auto-saves."""
+        if slot_id is not None:
+            self.current_slot = slot_id
         self.player = Player(char_id=char_id)
         self.current_act = 1
         self.dungeon_map = DungeonMap(num_floors=10, paths_per_floor=3, act=self.current_act)
@@ -94,11 +124,48 @@ class Game:
         self.is_current_elite = False
         self.is_current_boss = False
 
+        # Persist new run
+        self.save_current_run()
+
+    def load_run(self, slot_id: int):
+        """Loads an existing run from a save slot and resumes on the dungeon map."""
+        data = load_game(slot_id)
+        if not data:
+            self.show_title_screen()
+            return
+
+        self.current_slot = slot_id
+        self.player = data["player"]
+        self.dungeon_map = data["dungeon_map"]
+        self.current_act = data["current_act"]
+        self.is_current_elite = data["is_current_elite"]
+        self.is_current_boss = data["is_current_boss"]
+
+        self.combat_state = None
+        self.combat_view = None
+        self.deck_overlay = None
+
+        self.map_view = MapView(self.dungeon_map, self.player)
+        self.state = "MAP"
+        self.current_view = self.map_view
+
+    def save_current_run(self):
+        """Saves current active run to disk."""
+        if getattr(self, 'player', None) is not None and getattr(self, 'dungeon_map', None) is not None:
+            save_game(
+                self.current_slot,
+                self.player,
+                self.dungeon_map,
+                self.current_act,
+                self.is_current_elite,
+                self.is_current_boss
+            )
+
     def ascend_to_next_act(self):
         """Ascend to the next Act after claiming boss loot, generating a new floor map with tougher foes."""
         self.current_act += 1
-        # Heal 75% max HP upon ascending
-        heal_amount = int(self.player.max_hp * 0.75)
+        # Heal 40% max HP upon ascending
+        heal_amount = int(self.player.max_hp * 0.40)
         self.player.heal(heal_amount)
         play_sfx('victory', 0.8)
 
@@ -202,14 +269,42 @@ class Game:
                 ]
             enemies = random.choice(normal_pools)
 
-        # Scale monster stats for higher Acts / Ascension
-        if self.current_act > 1:
-            scale_factor = 1.0 + (self.current_act - 1) * 0.18
-            for e in enemies:
-                e.max_hp = int(e.max_hp * scale_factor)
-                e.hp = e.max_hp
-                if self.current_act >= 3:
-                    e.statuses.apply("Strength", self.current_act - 2)
+        # Scale monster stats dynamically for depth, Acts, Elites, and Bosses
+        current_floor = getattr(self.dungeon_map, 'current_floor', 0)
+        hp_mult = 1.0
+        bonus_str = 0
+
+        if self.current_act == 1:
+            if current_floor >= 4:
+                hp_mult += 0.10
+                bonus_str += 1
+            if current_floor >= 7:
+                hp_mult += 0.12
+        elif self.current_act == 2:
+            hp_mult += 0.30
+            bonus_str += 2
+            if current_floor >= 5:
+                hp_mult += 0.15
+                bonus_str += 1
+        elif self.current_act >= 3:
+            hp_mult += 0.55
+            bonus_str += 4
+            if current_floor >= 5:
+                hp_mult += 0.20
+                bonus_str += 1
+
+        if is_elite:
+            hp_mult += 0.15
+            bonus_str += 1
+        elif is_boss:
+            hp_mult += 0.25
+            bonus_str += 1
+
+        for e in enemies:
+            e.max_hp = int(e.max_hp * hp_mult)
+            e.hp = e.max_hp
+            if bonus_str > 0:
+                e.statuses.apply("Strength", bonus_str)
 
         self.combat_state = CombatState(self.player, enemies, self.particle_mgr, self.screen_shake)
         self.combat_view = CombatView(self.combat_state)
@@ -224,6 +319,8 @@ class Game:
             # Event Handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    if self.state in ("MAP", "REST", "SHOP", "EVENT", "REWARD") and getattr(self, 'player', None):
+                        self.save_current_run()
                     self.running = False
                     break
 
@@ -234,23 +331,52 @@ class Game:
                         self.deck_overlay = None
                     continue
 
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_d and self.state in ("MAP", "COMBAT"):
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_d and self.state in ("MAP", "COMBAT", "REST", "SHOP", "EVENT", "REWARD") and getattr(self, 'player', None):
                     self.deck_overlay = DeckView(self.player)
                     continue
 
+                # Title Screen State
+                if self.state == "TITLE":
+                    action, data = self.current_view.handle_event(event, mouse_pos)
+                    if action == "continue" and data:
+                        self.load_run(data)
+                    elif action == "new_run":
+                        self.show_char_select()
+                    elif action == "load_game":
+                        self.show_load_game()
+                    elif action == "quit":
+                        self.running = False
+                        break
+
+                # Load Game / Slot Selection State
+                elif self.state == "LOAD_GAME":
+                    action, data = self.current_view.handle_event(event, mouse_pos)
+                    if action == "load_slot" and data:
+                        self.load_run(data)
+                    elif action == "new_run_slot" and data:
+                        self.show_char_select(target_slot=data)
+                    elif action == "back_to_title":
+                        self.show_title_screen()
+
                 # Character Select State
-                if self.state == "CHAR_SELECT":
-                    action, char_id = self.current_view.handle_event(event, mouse_pos)
-                    if action == "start_game" and char_id:
-                        self.start_run(char_id)
+                elif self.state == "CHAR_SELECT":
+                    action, data = self.current_view.handle_event(event, mouse_pos)
+                    if action == "start_game" and data:
+                        self.start_run(data, self.current_slot)
+                    elif action == "back_to_title":
+                        self.show_title_screen()
 
                 # View-specific event handling
                 elif self.state == "MAP":
                     action, node = self.current_view.handle_event(event, mouse_pos)
                     if action == "enter_node" and node:
                         self.enter_node(node)
+                        self.save_current_run()
                     elif action == "open_deck":
                         self.deck_overlay = DeckView(self.player)
+                    elif action == "save_and_quit":
+                        self.save_current_run()
+                        self.show_title_screen()
 
                 elif self.state == "COMBAT":
                     action = self.current_view.handle_event(event, mouse_pos)
@@ -258,7 +384,9 @@ class Game:
                         self.state = "REWARD"
                         reward = CombatReward(is_elite=self.is_current_elite, is_boss=self.is_current_boss, act=self.current_act)
                         self.current_view = RewardView(reward, self.player)
+                        self.save_current_run()
                     elif action == "defeat":
+                        delete_save(self.current_slot)
                         cumul_floor = self.dungeon_map.get_cumulative_floor() if hasattr(self.dungeon_map, 'get_cumulative_floor') else self.dungeon_map.current_floor + 1
                         self.state = "GAME_OVER"
                         self.current_view = GameOverView(False, self.player, cumul_floor)
@@ -267,14 +395,18 @@ class Game:
                     action = self.current_view.handle_event(event, mouse_pos)
                     if action == "ascend_act":
                         self.ascend_to_next_act()
+                        self.save_current_run()
                     elif action == "back_to_map":
                         self.state = "MAP"
                         self.current_view = self.map_view
+                        self.save_current_run()
 
                 elif self.state == "GAME_OVER":
                     action = self.current_view.handle_event(event, mouse_pos)
                     if action == "restart":
                         self.show_char_select()
+                    elif action == "title_menu":
+                        self.show_title_screen()
 
             # Update Logic
             if self.deck_overlay is not None:

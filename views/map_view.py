@@ -32,10 +32,16 @@ class MapView:
         self.dungeon_map = dungeon_map
         self.player = player
         self.hovered_node = None
+        self.save_btn_rect = pygame.Rect(1005, 10, 120, 32)
         self.deck_btn_rect = pygame.Rect(1140, 10, 110, 32)
 
     def handle_event(self, event, mouse_pos) -> tuple[str, MapNode]:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # Check Save & Quit button
+            if self.save_btn_rect.collidepoint(event.pos):
+                play_sfx('click', 0.5)
+                return "save_and_quit", None
+
             # Check deck button
             if self.deck_btn_rect.collidepoint(event.pos):
                 play_sfx('click', 0.5)
@@ -47,6 +53,10 @@ class MapView:
                 if self.dungeon_map.select_node(node):
                     play_sfx('card_draw', 0.6)
                     return "enter_node", node
+
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            play_sfx('click', 0.5)
+            return "save_and_quit", None
 
         return "none", None
 
@@ -90,8 +100,20 @@ class MapView:
         cumul_floor = self.dungeon_map.get_cumulative_floor() if hasattr(self.dungeon_map, 'get_cumulative_floor') else self.dungeon_map.current_floor + 1
         draw_top_bar(surface, self.player, cumul_floor)
 
+        # Save & Quit Button in Top Bar
+        mouse_pos = pygame.mouse.get_pos()
+        is_save_hov = self.save_btn_rect.collidepoint(mouse_pos)
+        save_bg = (105, 32, 45) if is_save_hov else (68, 25, 36)
+        save_border = (210, 75, 90) if is_save_hov else (130, 48, 62)
+        pygame.draw.rect(surface, save_bg, self.save_btn_rect, border_radius=6)
+        pygame.draw.rect(surface, save_border, self.save_btn_rect, width=1, border_radius=6)
+        s_txt = FONTS['small'].render("Save & Quit", True, (245, 230, 235))
+        surface.blit(s_txt, s_txt.get_rect(center=self.save_btn_rect.center))
+
         # Deck View Button in Top Bar
-        pygame.draw.rect(surface, (50, 40, 65), self.deck_btn_rect, border_radius=6)
+        is_deck_hov = self.deck_btn_rect.collidepoint(mouse_pos)
+        deck_bg = (68, 52, 88) if is_deck_hov else (50, 40, 65)
+        pygame.draw.rect(surface, deck_bg, self.deck_btn_rect, border_radius=6)
         pygame.draw.rect(surface, (140, 120, 170), self.deck_btn_rect, width=1, border_radius=6)
         d_txt = FONTS['small'].render(f"Deck ({len(self.player.deck)})", True, COLOR_TEXT_LIGHT)
         surface.blit(d_txt, d_txt.get_rect(center=self.deck_btn_rect.center))

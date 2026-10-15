@@ -75,12 +75,12 @@ class StormCoreRelic(Relic):
 
 class SunCrestRelic(Relic):
     def __init__(self):
-        super().__init__("sun_crest", "Sun Crest", "Whenever you play a Skill, gain 2 Retribution (Thorns).", "Starter")
+        super().__init__("sun_crest", "Sun Crest", "Whenever you play a Skill, gain 1 Retribution (Thorns).", "Starter")
 
     def on_card_played(self, combat_state, player, card):
         from models.card import CardType
         if card.card_type == CardType.SKILL:
-            player.statuses.apply("Thorns", 2)
+            player.statuses.apply("Thorns", 1)
             combat_state.spawn_buff_fx(player.x + 60, player.y + 60)
 
 # ==========================================

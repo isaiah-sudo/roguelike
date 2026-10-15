@@ -90,9 +90,9 @@ echo.
 echo 1. Standalone Game Folder & EXE:
 echo    dist\CryptOfTheNecrolord\CryptOfTheNecrolord.exe
 echo.
-if exist "installer_output\CryptOfTheNecrolord_Setup_v1.0.0.exe" (
+if exist "installer_output\CryptOfTheNecrolord_Setup_v1.1.0.exe" (
     echo 2. Windows Setup Installer:
-    echo    installer_output\CryptOfTheNecrolord_Setup_v1.0.0.exe
+    echo    installer_output\CryptOfTheNecrolord_Setup_v1.1.0.exe
     echo.
 )
 echo 3. Game Icons:

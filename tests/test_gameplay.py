@@ -357,7 +357,14 @@ class TestRoguelikeGameplay(unittest.TestCase):
     def test_game_coordinator_flow(self):
         """Simulate real gameplay loop via Game coordinator."""
         from main import Game
+        from systems.save_manager import delete_save
         game = Game()
+        self.assertEqual(game.state, "TITLE")
+        game.current_view.update(0.016, (640, 360))
+        game.current_view.draw(game.screen)
+
+        # Transition to character select
+        game.show_char_select()
         self.assertEqual(game.state, "CHAR_SELECT")
         game.current_view.update(0.016, (640, 360))
         game.current_view.draw(game.screen)
@@ -384,6 +391,8 @@ class TestRoguelikeGameplay(unittest.TestCase):
         for _ in range(10):
             game.current_view.update(0.016, (640, 360))
             game.current_view.draw(game.screen)
+
+        delete_save(game.current_slot)
 
     def test_new_characters_tempest_and_templar(self):
         """Verifies Tempest Herald and Radiant Templar starters and relics."""
@@ -512,8 +521,282 @@ class TestRoguelikeGameplay(unittest.TestCase):
         heart.execute_turn(combat, player)
         self.assertTrue(player.hp < player.max_hp)
 
+    def test_deck_view_scrolling_and_clamping(self):
+        """Verifies DeckView scroll bounds, mouse wheel events, and smooth clamping."""
+        from views.deck_view import DeckView
+        from models.card import StrikeCard
+        player = Player(char_id="blood_knight")
+        # Add 24 extra cards so deck has 36 cards (6 rows)
+        for _ in range(24):
+            player.deck.append(StrikeCard())
+
+        dv = DeckView(player)
+        min_scroll = dv._get_max_scroll()
+        self.assertTrue(min_scroll < 0)
+
+        # Scroll down with mouse wheel event
+        wheel_event = pygame.event.Event(pygame.MOUSEWHEEL, y=-3)
+        dv.handle_event(wheel_event, (640, 360))
+        self.assertTrue(dv.target_scroll_y < 0)
+
+        # Update several ticks to verify smooth scroll interpolation
+        for _ in range(15):
+            dv.update(0.016, (640, 360))
+        self.assertTrue(dv.scroll_y < 0)
+
+        # Scroll far down to test clamp at min_scroll
+        extreme_scroll = pygame.event.Event(pygame.MOUSEWHEEL, y=-100)
+        dv.handle_event(extreme_scroll, (640, 360))
+        self.assertEqual(dv.target_scroll_y, min_scroll)
+
+        # Scroll up to test clamp at 0
+        scroll_up = pygame.event.Event(pygame.MOUSEWHEEL, y=100)
+        dv.handle_event(scroll_up, (640, 360))
+        self.assertEqual(dv.target_scroll_y, 0.0)
+
+    def test_rest_view_smith_scrolling_and_cancel(self):
+        """Verifies RestView smithing scroll handling and Cancel button operation."""
+        from views.rest_view import RestView
+        from models.card import StrikeCard
+        player = Player(char_id="blood_knight")
+        for _ in range(20):
+            player.deck.append(StrikeCard())
+
+        rv = RestView(player)
+        self.assertFalse(rv.smithing)
+
+        # Click Smith button
+        click_smith = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=rv.smith_btn.rect.center)
+        rv.handle_event(click_smith, rv.smith_btn.rect.center)
+        self.assertTrue(rv.smithing)
+
+        # Verify scroll bounds when smithing
+        cards = rv._get_unupgraded_cards()
+        min_scroll = rv._get_max_scroll(cards)
+        self.assertTrue(min_scroll < 0)
+
+        # Mouse wheel scroll
+        wheel_down = pygame.event.Event(pygame.MOUSEWHEEL, y=-2)
+        rv.handle_event(wheel_down, (640, 360))
+        self.assertTrue(rv.target_scroll_y < 0)
+
+        # Cancel smithing
+        cancel_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=rv.cancel_smith_btn.rect.center)
+        rv.handle_event(cancel_click, rv.cancel_smith_btn.rect.center)
+        self.assertFalse(rv.smithing)
+        self.assertEqual(rv.scroll_y, 0.0)
+
+    def test_shop_view_purge_scrolling_and_cancel(self):
+        """Verifies ShopView card purge scrolling and Cancel button operation."""
+        from views.shop_view import ShopView
+        from systems.shop import Shop
+        from models.card import StrikeCard
+        player = Player(char_id="blood_knight")
+        player.gold = 200
+        for _ in range(20):
+            player.deck.append(StrikeCard())
+
+        shop = Shop()
+        sv = ShopView(shop, player)
+        self.assertFalse(sv.removing_card)
+
+        # Click Remove Card button
+        click_purge = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=sv.remove_card_btn.rect.center)
+        sv.handle_event(click_purge, sv.remove_card_btn.rect.center)
+        self.assertTrue(sv.removing_card)
+
+        # Verify scroll bounds
+        min_scroll = sv._get_max_scroll()
+        self.assertTrue(min_scroll < 0)
+
+        # Mouse wheel scroll
+        wheel_down = pygame.event.Event(pygame.MOUSEWHEEL, y=-3)
+        sv.handle_event(wheel_down, (640, 360))
+        self.assertTrue(sv.target_scroll_y < 0)
+
+        # Click cancel
+        cancel_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=sv.cancel_remove_btn.rect.center)
+        sv.handle_event(cancel_click, sv.cancel_remove_btn.rect.center)
+        self.assertFalse(sv.removing_card)
+        self.assertEqual(sv.scroll_y, 0.0)
+
+    def test_save_manager_save_and_load(self):
+        """Verifies full roundtrip serialization of player, cards, relics, potions, and map."""
+        from systems.save_manager import save_game, load_game, delete_save, get_slot_info
+        from systems.map_generator import DungeonMap
+
+        slot = 3
+        delete_save(slot)
+
+        player = Player(char_id="shadow_assassin")
+        player.hp = 54
+        player.gold = 320
+        player.deck[0].upgrade()
+        player.deck[1].upgrade()
+
+        dungeon_map = DungeonMap(num_floors=10, paths_per_floor=3, act=2)
+        node = dungeon_map.floors[0][1]
+        dungeon_map.select_node(node)
+
+        self.assertTrue(save_game(slot, player, dungeon_map, current_act=2))
+
+        info = get_slot_info(slot)
+        self.assertTrue(info["exists"])
+        self.assertEqual(info["char_id"], "shadow_assassin")
+        self.assertEqual(info["hp"], 54)
+        self.assertEqual(info["gold"], 320)
+        self.assertEqual(info["act"], 2)
+
+        loaded = load_game(slot)
+        self.assertIsNotNone(loaded)
+        p2 = loaded["player"]
+        m2 = loaded["dungeon_map"]
+
+        self.assertEqual(p2.char_id, "shadow_assassin")
+        self.assertEqual(p2.hp, 54)
+        self.assertEqual(p2.gold, 320)
+        self.assertTrue(p2.deck[0].upgraded)
+        self.assertTrue(p2.deck[1].upgraded)
+        self.assertEqual(m2.act, 2)
+        self.assertEqual(m2.current_node.floor, 0)
+        self.assertEqual(m2.current_node.index, 1)
+
+        delete_save(slot)
+        self.assertFalse(get_slot_info(slot)["exists"])
+
+    def test_title_view_and_navigation(self):
+        """Verifies TitleView rendering, button states, and event handling."""
+        from views.title_view import TitleView
+        from systems.save_manager import save_game, delete_save
+        from systems.map_generator import DungeonMap
+
+        # Clear slot 1 and check title view with no saves
+        delete_save(1)
+        delete_save(2)
+        delete_save(3)
+
+        tv = TitleView()
+        self.assertFalse(tv.has_save)
+        self.assertFalse(tv.continue_btn.enabled)
+
+        # Draw and update TitleView
+        surf = pygame.Surface((1280, 720))
+        tv.update(0.016, (640, 360))
+        tv.draw(surf)
+
+        # Click New Expedition
+        click_new = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tv.new_run_btn.rect.center)
+        action, data = tv.handle_event(click_new, tv.new_run_btn.rect.center)
+        self.assertEqual(action, "new_run")
+
+        # Now save a game in slot 1 and refresh
+        p = Player(char_id="blood_knight")
+        m = DungeonMap(num_floors=10, paths_per_floor=3, act=1)
+        save_game(1, p, m, 1)
+
+        tv.refresh_save_status()
+        self.assertTrue(tv.has_save)
+        self.assertTrue(tv.continue_btn.enabled)
+
+        # Click Continue
+        click_cont = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tv.continue_btn.rect.center)
+        action, data = tv.handle_event(click_cont, tv.continue_btn.rect.center)
+        self.assertEqual(action, "continue")
+        self.assertEqual(data, 1)
+
+        # Cleanup
+        delete_save(1)
+
+    def test_load_game_view_interactions(self):
+        """Verifies LoadGameView slot browsing, resuming, and safe deletion."""
+        from views.load_game_view import LoadGameView
+        from systems.save_manager import save_game, delete_save
+        from systems.map_generator import DungeonMap
+
+        delete_save(1)
+        delete_save(2)
+        delete_save(3)
+
+        # Create save in slot 2
+        p = Player(char_id="tempest_herald")
+        m = DungeonMap(num_floors=10, paths_per_floor=3, act=1)
+        save_game(2, p, m, 1)
+
+        lgv = LoadGameView()
+        surf = pygame.Surface((1280, 720))
+        lgv.update(0.016, (640, 360))
+        lgv.draw(surf)
+
+        # Slot 1 is empty -> clicking start run
+        btn_s1 = lgv.slot_buttons[1]["new"]
+        click_s1 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=btn_s1.rect.center)
+        action, sid = lgv.handle_event(click_s1, btn_s1.rect.center)
+        self.assertEqual(action, "new_run_slot")
+        self.assertEqual(sid, 1)
+
+        # Slot 2 has save -> clicking resume
+        btn_s2_load = lgv.slot_buttons[2]["load"]
+        click_s2 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=btn_s2_load.rect.center)
+        action, sid = lgv.handle_event(click_s2, btn_s2_load.rect.center)
+        self.assertEqual(action, "load_slot")
+        self.assertEqual(sid, 2)
+
+        # Slot 2 delete flow: first click prompts confirmation, second confirms
+        btn_s2_del = lgv.slot_buttons[2]["delete"]
+        click_del1 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=btn_s2_del.rect.center)
+        action, sid = lgv.handle_event(click_del1, btn_s2_del.rect.center)
+        self.assertEqual(action, "none")
+        self.assertEqual(lgv.confirm_delete_slot, 2)
+
+        # Second click deletes
+        btn_s2_del_conf = lgv.slot_buttons[2]["delete"]
+        click_del2 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=btn_s2_del_conf.rect.center)
+        action, sid = lgv.handle_event(click_del2, btn_s2_del_conf.rect.center)
+        self.assertIsNone(lgv.confirm_delete_slot)
+        self.assertFalse(lgv.slots[1]["exists"])
+
+    def test_game_save_and_quit_flow(self):
+        """Verifies end-to-end saving from MapView, returning to TitleView, and reloading."""
+        from main import Game
+        from systems.save_manager import delete_save, get_slot_info
+
+        delete_save(1)
+        game = Game()
+        self.assertEqual(game.state, "TITLE")
+
+        # Start a new run
+        game.start_run("void_necromancer", slot_id=1)
+        self.assertEqual(game.state, "MAP")
+        game.player.gold = 500
+
+        # Click Save & Quit on map view
+        save_btn_pos = game.map_view.save_btn_rect.center
+        click_save = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=save_btn_pos)
+        action, _ = game.map_view.handle_event(click_save, save_btn_pos)
+        self.assertEqual(action, "save_and_quit")
+
+        # Simulate coordinator handling
+        game.save_current_run()
+        game.show_title_screen()
+        self.assertEqual(game.state, "TITLE")
+
+        # Verify save exists
+        info = get_slot_info(1)
+        self.assertTrue(info["exists"])
+        self.assertEqual(info["gold"], 500)
+
+        # Load run
+        game.load_run(1)
+        self.assertEqual(game.state, "MAP")
+        self.assertEqual(game.player.gold, 500)
+        self.assertEqual(game.player.char_id, "void_necromancer")
+
+        # Clean up
+        delete_save(1)
+
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

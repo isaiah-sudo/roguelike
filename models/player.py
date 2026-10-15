@@ -47,7 +47,7 @@ class Player(Entity):
         super().__init__(name, max_hp)
         self.max_energy = 3
         self.energy = self.max_energy
-        self.gold = 99
+        self.gold = 75
 
         # Combat Piles
         self.draw_pile = []

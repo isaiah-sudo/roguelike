@@ -1,6 +1,7 @@
 """
 Combat View: Overhauled with Slay the Spire aesthetics, staged turn feedback,
-animated dungeon torches, ornate energy orb, floating combat action banner, and clear attack timing.
+animated dungeon torches, ambient atmospheric particles, smooth card hover elevation,
+animated targeting reticle, and delayed ghost damage health bars.
 """
 import pygame
 import math
@@ -23,8 +24,16 @@ class CombatView:
         self.targeted_enemy = None
         self.drag_start_pos = None
 
-        # Ambient Torch Sparks
+        # Ambient Torch Sparks & Floating Dungeon Motes
         self.torch_particles = []
+        self.ambient_motes = []
+        self.anim_time = 0.0
+
+        # Smooth Card Elevation
+        self.card_elevations = []
+
+        # Ghost Damage Tracking (entity -> float)
+        self.ghost_hp = {}
 
     def handle_event(self, event, mouse_pos) -> str:
         if self.state.phase == "victory":
@@ -106,6 +115,12 @@ class CombatView:
         if num_cards == 0:
             return []
 
+        # Ensure card elevations list matches hand size
+        while len(self.card_elevations) < num_cards:
+            self.card_elevations.append(0.0)
+        while len(self.card_elevations) > num_cards:
+            self.card_elevations.pop()
+
         base_y = 505
         total_width = 840
         spacing = min(CARD_WIDTH + 18, total_width / max(1, num_cards))
@@ -114,14 +129,28 @@ class CombatView:
         results = []
         for i, card in enumerate(hand):
             x = start_x + i * spacing
-            y = base_y - 32 if i == self.hovered_card_idx else base_y
+            elev = self.card_elevations[i] if i < len(self.card_elevations) else 0.0
+            y = int(base_y + elev)
             rect = pygame.Rect(x, y, CARD_WIDTH, CARD_HEIGHT)
             results.append((rect, card))
         return results
 
     def update(self, dt, mouse_pos):
+        self.anim_time += dt
+
         # Update staged combat state & timers
         self.state.update(dt)
+
+        # Update ghost health bars
+        all_entities = [self.state.player] + self.state.enemies
+        for entity in all_entities:
+            cur_hp = float(entity.hp)
+            if entity not in self.ghost_hp or cur_hp > self.ghost_hp[entity]:
+                self.ghost_hp[entity] = cur_hp
+            elif cur_hp < self.ghost_hp[entity]:
+                # Smooth slide down
+                decay = max(24.0 * dt, (self.ghost_hp[entity] - cur_hp) * min(1.0, dt * 6.0))
+                self.ghost_hp[entity] = max(cur_hp, self.ghost_hp[entity] - decay)
 
         # Update button state depending on whose turn it is
         if self.state.phase == "enemy_turn":
@@ -137,11 +166,9 @@ class CombatView:
         self.state.particle_mgr.update(dt)
         self.state.screen_shake.update(dt)
 
-        # Ambient Torch Sparks update
-        if random.random() < 0.35:
-            # Left torch (80, 240)
+        # Ambient Torch Sparks
+        if random.random() < 0.40:
             self.torch_particles.append([80 + random.uniform(-6, 6), 235, random.uniform(-0.5, 0.5), random.uniform(-1.5, -0.6), random.uniform(0.3, 0.6)])
-            # Right torch (1200, 240)
             self.torch_particles.append([1200 + random.uniform(-6, 6), 235, random.uniform(-0.5, 0.5), random.uniform(-1.5, -0.6), random.uniform(0.3, 0.6)])
 
         for p in self.torch_particles:
@@ -149,6 +176,23 @@ class CombatView:
             p[1] += p[3]
             p[4] -= dt
         self.torch_particles = [p for p in self.torch_particles if p[4] > 0]
+
+        # Ambient floating dungeon motes
+        if random.random() < 0.20 and len(self.ambient_motes) < 35:
+            self.ambient_motes.append([
+                random.uniform(50, 1230),
+                random.uniform(150, 650),
+                random.uniform(-0.3, 0.3),
+                random.uniform(-0.4, -0.1),
+                random.uniform(2.5, 5.0),
+                random.uniform(1.2, 2.5)
+            ])
+
+        for m in self.ambient_motes:
+            m[0] += m[2] + math.sin(self.anim_time * 2.0 + m[1]) * 0.2
+            m[1] += m[3]
+            m[4] -= dt
+        self.ambient_motes = [m for m in self.ambient_motes if m[4] > 0]
 
         # Hovered card detection
         card_rects = self._get_hand_card_rects()
@@ -159,6 +203,11 @@ class CombatView:
                     self.hovered_card_idx = idx
                     break
 
+        # Smooth elevation animation for cards in hand
+        for i in range(len(self.card_elevations)):
+            target_elev = -34.0 if i == self.hovered_card_idx else 0.0
+            self.card_elevations[i] += (target_elev - self.card_elevations[i]) * min(1.0, dt * 18.0)
+
         self.targeted_enemy = self._get_enemy_under_pos(mouse_pos) if self.state.targeting_active else None
 
     def draw(self, surface):
@@ -167,6 +216,13 @@ class CombatView:
 
         # Ambient Dungeon Arches & Torch Glow
         self._draw_dungeon_background(surface)
+
+        # Ambient floating motes
+        for m in self.ambient_motes:
+            alpha = int(120 * (m[4] / 5.0))
+            mote_surf = pygame.Surface((6, 6), pygame.SRCALPHA)
+            pygame.draw.circle(mote_surf, (200, 190, 225, alpha), (3, 3), int(m[5]))
+            surface.blit(mote_surf, (int(m[0] - 3), int(m[1] - 3)))
 
         # Top Bar
         draw_top_bar(surface, self.state.player, self.state.turn)
@@ -186,7 +242,8 @@ class CombatView:
             20,
             self.state.player.hp,
             self.state.player.max_hp,
-            self.state.player.block
+            self.state.player.block,
+            ghost_hp=self.ghost_hp.get(self.state.player)
         )
         self._draw_status_badges(surface, self.state.player, px, self.state.player.y + self.state.player.height + 36)
 
@@ -194,9 +251,6 @@ class CombatView:
         for enemy in self.state.enemies:
             if enemy.is_alive():
                 ex = int(enemy.x + enemy.lunge_x)
-                if enemy == self.targeted_enemy:
-                    glow_rect = pygame.Rect(ex - 8, enemy.y - 8, enemy.width + 16, enemy.height + 16)
-                    pygame.draw.rect(surface, (255, 220, 80), glow_rect, width=3, border_radius=14)
 
                 # Active attacker highlight during enemy turn
                 if self.state.phase == "enemy_turn" and enemy == self.state.acting_enemy:
@@ -212,9 +266,14 @@ class CombatView:
                     20,
                     enemy.hp,
                     enemy.max_hp,
-                    enemy.block
+                    enemy.block,
+                    ghost_hp=self.ghost_hp.get(enemy)
                 )
                 self._draw_status_badges(surface, enemy, ex, enemy.y + enemy.height + 36)
+
+                # Animated Targeting Reticle over targeted enemy
+                if enemy == self.targeted_enemy:
+                    self._draw_targeting_reticle(surface, ex, enemy.y, enemy.width, enemy.height)
 
         # 5. Slay the Spire Style Energy Orb (Bottom-Left)
         self._draw_energy_orb(surface)
@@ -251,8 +310,35 @@ class CombatView:
             mouse_pos = pygame.mouse.get_pos()
             draw_targeting_arrow(surface, self.drag_start_pos, mouse_pos)
 
-        # 10. Particles & Damage Popups
+        # 10. Particles, Shockwaves & Damage Popups
         self.state.particle_mgr.draw(surface, FONTS['damage'])
+
+    def _draw_targeting_reticle(self, surface, x, y, width, height):
+        cx = x + width // 2
+        cy = y + height // 2
+        t = self.anim_time * 6.0
+        pulse = math.sin(t) * 4
+        rad = max(24, int(min(width, height) * 0.45 + pulse))
+
+        # Glowing target ring
+        ret_surf = pygame.Surface((rad * 2 + 20, rad * 2 + 20), pygame.SRCALPHA)
+        center = (rad + 10, rad + 10)
+        pygame.draw.circle(ret_surf, (255, 60, 60, 70), center, rad + 6)
+        pygame.draw.circle(ret_surf, (255, 220, 80, 200), center, rad, width=2)
+        # Inner dot
+        pygame.draw.circle(ret_surf, (255, 240, 100), center, 3)
+
+        # Rotating corner tick marks
+        angle = self.anim_time * 2.5
+        for i in range(4):
+            a = angle + i * (math.pi / 2)
+            p1_x = center[0] + math.cos(a) * (rad - 6)
+            p1_y = center[1] + math.sin(a) * (rad - 6)
+            p2_x = center[0] + math.cos(a) * (rad + 6)
+            p2_y = center[1] + math.sin(a) * (rad + 6)
+            pygame.draw.line(ret_surf, (255, 220, 80), (p1_x, p1_y), (p2_x, p2_y), 2)
+
+        surface.blit(ret_surf, (cx - center[0], cy - center[1]))
 
     def _draw_dungeon_background(self, surface):
         # Wall torches ambient radial light
@@ -308,11 +394,18 @@ class CombatView:
         txt = FONTS['huge'].render(energy_str, True, (255, 255, 255))
         surface.blit(txt, txt.get_rect(center=orb_center))
 
-    def _draw_styled_health_bar(self, surface, x, y, width, height, current_hp, max_hp, block=0):
+    def _draw_styled_health_bar(self, surface, x, y, width, height, current_hp, max_hp, block=0, ghost_hp=None):
         # Background
         pygame.draw.rect(surface, COLOR_HEALTH_BG, (x, y, width, height), border_radius=5)
 
-        # HP Fill
+        # Delayed Ghost Damage Bar (amber/yellow trailing bar)
+        if ghost_hp is not None and ghost_hp > current_hp:
+            ghost_ratio = max(0.0, min(1.0, ghost_hp / max(1, max_hp)))
+            ghost_w = int(width * ghost_ratio)
+            if ghost_w > 0:
+                pygame.draw.rect(surface, (230, 160, 45), (x, y, ghost_w, height), border_radius=5)
+
+        # HP Fill (crimson red)
         ratio = max(0.0, min(1.0, current_hp / max(1, max_hp)))
         hp_w = int(width * ratio)
         if hp_w > 0:
@@ -326,7 +419,6 @@ class CombatView:
             shield_size = 24
             sx = x - shield_size // 2 - 2
             sy = y + (height - shield_size) // 2
-            # Heraldic shield
             pygame.draw.polygon(surface, COLOR_BLOCK_BLUE, [
                 (sx + shield_size // 2, sy),
                 (sx + shield_size, sy + shield_size // 3),

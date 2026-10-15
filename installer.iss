@@ -2,7 +2,7 @@
 ; Dark Fantasy Deckbuilding Roguelike
 
 #define MyAppName "Crypt of the Necrolord"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Dark Spire Studio"
 #define MyAppURL "https://github.com/example/rougelike"
 #define MyAppExeName "CryptOfTheNecrolord.exe"
@@ -30,10 +30,10 @@ PrivilegesRequiredOverridesAllowed=dialog commandline
 DisableDirPage=no
 DisableProgramGroupPage=no
 UninstallDisplayIcon={app}\{#MyAppExeName}
-VersionInfoVersion=1.0.0.0
+VersionInfoVersion=1.1.0.0
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName} Setup
-VersionInfoProductVersion=1.0.0.0
+VersionInfoProductVersion=1.1.0.0
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

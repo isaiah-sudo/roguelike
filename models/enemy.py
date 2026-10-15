@@ -150,14 +150,14 @@ class CryptCultist(Enemy):
         if self.turn_count == 0:
             self.intent = Intent(IntentType.BUFF, desc="Incantation (+3 Ritual)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=6, desc="Dark Strike")
+            self.intent = Intent(IntentType.ATTACK, damage=8, desc="Dark Strike")
 
     def execute_turn(self, combat_state, player):
         if self.turn_count == 0:
             self.statuses.apply("Ritual", 3)
             combat_state.spawn_buff_fx(self.x + 60, self.y + 60)
         else:
-            dmg = max(0, 6 + self.statuses.get("Strength"))
+            dmg = max(0, 8 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg)
@@ -172,24 +172,24 @@ class SkeletonSentinel(Enemy):
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 3
         if cycle == 0:
-            self.intent = Intent(IntentType.DEFEND, desc="Bone Shield (10 Block)")
+            self.intent = Intent(IntentType.DEFEND, desc="Bone Shield (12 Block)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.ATTACK, damage=8, desc="Cleave")
+            self.intent = Intent(IntentType.ATTACK, damage=10, desc="Cleave")
         else:
-            self.intent = Intent(IntentType.ATTACK_DEBUFF, damage=5, desc="Shatter Strike (Vulnerable)")
+            self.intent = Intent(IntentType.ATTACK_DEBUFF, damage=6, desc="Shatter Strike (Vulnerable)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 3
         if cycle == 0:
-            self.gain_block(10)
+            self.gain_block(12)
             combat_state.spawn_block_fx(self.x + 60, self.y + 60)
         elif cycle == 1:
-            dmg = max(0, 8 + self.statuses.get("Strength"))
+            dmg = max(0, 10 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg)
         else:
-            dmg = max(0, 5 + self.statuses.get("Strength"))
+            dmg = max(0, 6 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg)
@@ -269,19 +269,19 @@ class PlagueRat(Enemy):
 
     def decide_intent(self, combat_state):
         if self.turn_count % 2 == 0:
-            self.intent = Intent(IntentType.ATTACK, damage=4, hits=2, desc="Venomous Bite")
+            self.intent = Intent(IntentType.ATTACK, damage=5, hits=2, desc="Venomous Bite (5x2)")
         else:
-            self.intent = Intent(IntentType.DEBUFF, desc="Toxic Miasma (3 Poison, Weak)")
+            self.intent = Intent(IntentType.DEBUFF, desc="Toxic Miasma (4 Poison, Weak)")
 
     def execute_turn(self, combat_state, player):
         if self.turn_count % 2 == 0:
             for _ in range(2):
-                dmg = max(0, 4 + self.statuses.get("Strength"))
+                dmg = max(0, 5 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         else:
-            player.statuses.apply("Poison", 3)
+            player.statuses.apply("Poison", 4)
             player.statuses.apply("Weak", 1)
             combat_state.spawn_poison_fx(player.x + 60, player.y + 60)
         self.turn_count += 1
@@ -337,7 +337,7 @@ class VoidReaver(Enemy):
         if cycle == 0:
             self.intent = Intent(IntentType.BUFF, desc="Eldritch Rage (+3 Str, +8 Block)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=16, desc="Rending Cleave (16 DMG)")
+            self.intent = Intent(IntentType.ATTACK, damage=18, desc="Rending Cleave (18 DMG)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 2
@@ -346,7 +346,7 @@ class VoidReaver(Enemy):
             self.gain_block(8)
             combat_state.spawn_buff_fx(self.x + 60, self.y + 60)
         else:
-            dmg = max(0, 16 + self.statuses.get("Strength"))
+            dmg = max(0, 18 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)

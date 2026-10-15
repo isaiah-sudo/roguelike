@@ -4,8 +4,8 @@
 #
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 0, 0),
-    prodvers=(1, 0, 0, 0),
+    filevers=(1, 1, 0, 0),
+    prodvers=(1, 1, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -21,12 +21,12 @@ VSVersionInfo(
           [
             StringStruct('CompanyName', 'Dark Spire Roguelike'),
             StringStruct('FileDescription', 'Crypt of the Necrolord - Dark Fantasy Deckbuilding Roguelike'),
-            StringStruct('FileVersion', '1.0.0.0'),
+            StringStruct('FileVersion', '1.1.0.0'),
             StringStruct('InternalName', 'CryptOfTheNecrolord'),
             StringStruct('LegalCopyright', 'Copyright (C) 2026 Dark Spire Team'),
             StringStruct('OriginalFilename', 'CryptOfTheNecrolord.exe'),
             StringStruct('ProductName', 'Crypt of the Necrolord'),
-            StringStruct('ProductVersion', '1.0.0.0'),
+            StringStruct('ProductVersion', '1.1.0.0'),
           ]
         )
       ]

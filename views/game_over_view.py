@@ -12,16 +12,20 @@ class GameOverView:
         self.is_victory = is_victory
         self.player = player
         self.floor_reached = floor_reached
-        self.restart_btn = Button((540, 560, 200, 52), "PLAY AGAIN", FONTS['medium'], bg_color=(120, 35, 45) if not is_victory else (45, 120, 70))
+        self.restart_btn = Button((420, 560, 200, 52), "PLAY AGAIN", FONTS['medium'], bg_color=(120, 35, 45) if not is_victory else (45, 120, 70))
+        self.menu_btn = Button((660, 560, 200, 52), "TITLE MENU", FONTS['medium'], bg_color=(45, 38, 55), hover_color=(70, 58, 85))
 
     def handle_event(self, event, mouse_pos) -> str:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.restart_btn.handle_event(event):
                 return "restart"
+            if self.menu_btn.handle_event(event):
+                return "title_menu"
         return "none"
 
     def update(self, dt, mouse_pos):
         self.restart_btn.update(mouse_pos)
+        self.menu_btn.update(mouse_pos)
 
     def draw(self, surface):
         surface.fill(COLOR_BG_DARK)
@@ -62,3 +66,4 @@ class GameOverView:
             sy += 45
 
         self.restart_btn.draw(surface)
+        self.menu_btn.draw(surface)

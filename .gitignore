@@ -10,3 +10,5 @@ installer_output/
 *.spec
 .env
 venv/
+saves/
+*.save

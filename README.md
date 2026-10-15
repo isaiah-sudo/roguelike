@@ -5,6 +5,25 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 
 ---
 
+## 🚀 What's New in v1.1
+- **Full Deck, Smithing & Purge Scrolling**:
+  - Smooth vertical scrolling across the entire deck view, campfire smithing/upgrade screen, and merchant purge ritual screen.
+  - Supports mouse wheel, draggable custom scrollbar, and keyboard controls with full viewport clipping.
+  - Added convenient **CANCEL** buttons to both the card upgrade and card purge screens.
+- **Combat Balance Overhaul**:
+  - Progressive depth and act monster scaling: deeper floors and higher acts dynamically scale monster vitality, strength, and elite/boss modifiers.
+  - Balanced act ascension healing from 75% down to 40% Max HP.
+  - Tuned early-game economy and balanced relics (e.g., Sun Crest Retribution).
+  - Increased threat levels on early enemies (Cultist, Sentinel, Plague Fiend).
+- **Major Visual & Animation Polish**:
+  - **Trailing Ghost HP Bars**: Fighting game / AAA roguelike delayed amber damage bars on entities that smoothly slide down after attacks.
+  - **Animated Campfire**: Undulating multi-layered flame tongues, hot rising embers drifting upward, pulsing warm radial light, and glowing coals.
+  - **Card Visuals Overhaul**: Golden corner ribbons and metallic frames on upgraded cards, glowing hover halo auras, 3D beveled energy orbs, and gemstone rarity indicators.
+  - **Targeting Reticle**: Animated pulsing crosshairs with rotating brackets over targeted enemies.
+  - **Atmospheric Particles & Shockwaves**: Expanding attack shockwave rings, floating dungeon air motes, and lantern-lit merchant shop.
+
+---
+
 ## 🌟 Key Features
 
 1. **Multiple Playable Champions**:
@@ -79,6 +98,7 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
    - **Underworld Merchant**: Buy new cards, legendary relics, and combat potions, or pay gold to purge unwanted cards from your deck.
    - **Mystery Encounters**: Atmospheric text-based gothic events with branching decisions.
    - **Relics & Potions**: Passive modifiers (*Vajra*, *Anchor*, *Kunai*, *Lantern*, *Meat on the Bone*, *Dark Grimoire*) and instant-use consumable flasks.
+   - **Save Game & Title Screen**: Multi-slot expedition save system. Auto-saves on map progress and combat victory; manual **Save & Quit** button directly in the dungeon top bar; Title Screen with **Continue**, **New Expedition**, and full **Saved Expeditions** browser.
 
 5. **Self-Contained Procedural Sound & Visual Effects**:
    - Built-in real-time audio synthesis (no missing sound files or broken audio dependencies).
@@ -136,7 +156,9 @@ python -m unittest tests/test_gameplay.py
 | **End Turn** | Click **END TURN** button or press **Space** / **E** |
 | **Use Potion** | Click any potion in the potion belt (top right) during combat |
 | **Inspect Deck** | Press **D** or click the **Deck** button on the Map |
+| **Save & Quit** | Click **Save & Quit** in the top bar or press **Escape** on the Map |
 | **Navigate Map** | **Left Click** on any glowing / available connected node |
+| **Title Navigation** | **Enter** (Embark/Continue), **N** (New Run), **L** (Saved Games), **Esc** (Depart) |
 
 ---
 
@@ -168,10 +190,14 @@ rougelike/
 ├── systems/
 │   ├── combat.py               # Battle state, turn management, damage math
 │   ├── map_generator.py        # Slay-the-Spire procedural node graph
+│   ├── save_manager.py         # Multi-slot game serialization and recovery
 │   ├── events.py               # Gothic mystery encounters & choices
 │   ├── shop.py                 # Merchant shop & card removal service
 │   └── reward.py               # Post-battle card draft & loot tables
 ├── views/
+│   ├── title_view.py           # Atmospheric main menu & Continue screen
+│   ├── load_game_view.py       # Expedition slot browser with stats & purge
+│   ├── char_select_view.py     # Hero class selection screen
 │   ├── combat_view.py          # Battlefield rendering & card interaction
 │   ├── map_view.py             # Branching map navigation screen
 │   ├── reward_view.py          # 3-Card drafting & victory loot screen

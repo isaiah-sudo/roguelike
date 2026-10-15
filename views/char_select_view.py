@@ -82,12 +82,18 @@ CHARACTERS_DATA = [
 ]
 
 class CharSelectView:
-    def __init__(self):
+    def __init__(self, target_slot: int = 1):
+        self.target_slot = target_slot
         self.selected_idx = 0
         self.start_btn = Button((520, 642, 240, 50), "EMBARK INTO THE CRYPT", FONTS['medium'], bg_color=(140, 35, 45), hover_color=(180, 45, 60))
+        self.back_btn = Button((38, 42, 110, 36), "<- BACK", FONTS['small'], bg_color=(45, 36, 52), hover_color=(70, 55, 80))
 
     def handle_event(self, event, mouse_pos) -> tuple[str, str]:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.back_btn.handle_event(event):
+                play_sfx('click', 0.5)
+                return "back_to_title", ""
+
             if self.start_btn.handle_event(event):
                 selected_char = CHARACTERS_DATA[self.selected_idx]["id"]
                 return "start_game", selected_char
@@ -102,7 +108,10 @@ class CharSelectView:
                     break
 
         elif event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_LEFT, pygame.K_a):
+            if event.key == pygame.K_ESCAPE:
+                play_sfx('click', 0.5)
+                return "back_to_title", ""
+            elif event.key in (pygame.K_LEFT, pygame.K_a):
                 self.selected_idx = (self.selected_idx - 1) % len(CHARACTERS_DATA)
                 play_sfx('click', 0.5)
             elif event.key in (pygame.K_RIGHT, pygame.K_d):
@@ -132,9 +141,11 @@ class CharSelectView:
 
     def update(self, dt, mouse_pos):
         self.start_btn.update(mouse_pos)
+        self.back_btn.update(mouse_pos)
 
     def draw(self, surface):
         surface.fill(COLOR_BG_DARK)
+        self.back_btn.draw(surface)
 
         # Header Title
         title = FONTS['huge'].render("CHOOSE YOUR CHAMPION", True, COLOR_TEXT_GOLD)
