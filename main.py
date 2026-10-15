@@ -2,9 +2,18 @@
 Crypt of the Necrolord - Dark Fantasy Deckbuilding Roguelike.
 Main entry point and game coordinator.
 """
+import os
 import sys
 import random
 import pygame
+
+def resource_path(relative_path: str) -> str:
+    """Get absolute path to resource, works for dev and PyInstaller."""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(base_path, relative_path)
 
 # Initialize pygame and mixer early
 pygame.init()
@@ -44,6 +53,16 @@ class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption(TITLE)
+
+        # Set game window icon
+        icon_path = resource_path(os.path.join("assets", "icon.png"))
+        if os.path.exists(icon_path):
+            try:
+                icon_surface = pygame.image.load(icon_path)
+                pygame.display.set_icon(icon_surface)
+            except Exception as e:
+                print(f"[Game] Warning: Could not set window icon: {e}")
+
         self.clock = pygame.time.Clock()
         self.running = True
 

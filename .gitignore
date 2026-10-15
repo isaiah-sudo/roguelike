@@ -6,6 +6,7 @@ __pycache__/
 .coverage
 dist/
 build/
+installer_output/
 *.spec
 .env
 venv/

@@ -99,6 +99,26 @@ Simply execute:
 ```bash
 python main.py
 ```
+Or double-click `play.bat` or `run.bat`.
+
+### 📦 Standalone Executable & Windows Installer
+
+The project includes pre-configured tools to build a standalone Windows `.exe` and an Inno Setup installer with custom gothic icons:
+
+1. **Run the Standalone Executable**:
+   - Location: `dist/CryptOfTheNecrolord/CryptOfTheNecrolord.exe`
+   - Fully standalone with bundled Python runtime, assets, and custom icon. No Python installation required!
+
+2. **Run the Windows Setup Installer**:
+   - Location: `installer_output/CryptOfTheNecrolord_Setup_v1.0.0.exe`
+   - Installs the game into Program Files / User Apps, configures Desktop & Start Menu shortcuts with the game icon, and registers a standard Windows uninstaller.
+
+3. **Re-building EXE & Installer**:
+   - Simply double-click `build.bat` or run:
+   ```bash
+   build.bat
+   ```
+   This will automatically generate the multi-resolution `.ico` / `.png` icons, compile the standalone executable via PyInstaller, and generate the Windows setup wizard via Inno Setup.
 
 ### Run Automated Tests
 ```bash
@@ -124,6 +144,9 @@ python -m unittest tests/test_gameplay.py
 
 ```
 rougelike/
+├── assets/                     # Game icons (multi-res .ico and .png)
+├── build.bat                   # 1-Click build script for EXE & Installer
+├── installer.iss               # Inno Setup Windows installer definition
 ├── main.py                     # Entry point & run state coordinator
 ├── settings.py                 # Display dimensions, color themes, fonts
 ├── engine/
@@ -140,6 +163,8 @@ rougelike/
 │   ├── entity.py               # Combatant base class
 │   ├── player.py               # Hero entity, master deck, draw/discard piles
 │   └── enemy.py                # Enemy AI, intents, normal, elite & boss roster
+├── scripts/
+│   └── generate_icon.py        # Programmatic high-res icon generator
 ├── systems/
 │   ├── combat.py               # Battle state, turn management, damage math
 │   ├── map_generator.py        # Slay-the-Spire procedural node graph
