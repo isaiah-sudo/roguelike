@@ -13,7 +13,7 @@ CHARACTERS_DATA = [
         "id": "blood_knight",
         "name": "BLOOD KNIGHT",
         "title": "Vanguard of Ruin",
-        "hp": 80,
+        "hp": 84,
         "color": (210, 45, 60),
         "relic": "Burning Blood (Heal 6 HP)",
         "desc": [
@@ -27,7 +27,7 @@ CHARACTERS_DATA = [
         "id": "shadow_assassin",
         "name": "SHADOW ASSASSIN",
         "title": "Nightshade Weaver",
-        "hp": 70,
+        "hp": 75,
         "color": (45, 185, 110),
         "relic": "Serpent Ring (+2 Draw Turn 1)",
         "desc": [
@@ -41,7 +41,7 @@ CHARACTERS_DATA = [
         "id": "void_necromancer",
         "name": "VOID NECROMANCER",
         "title": "Scion of the Abyss",
-        "hp": 68,
+        "hp": 76,
         "color": (160, 70, 230),
         "relic": "Soul Phylactery (Exhaust 4 DMG)",
         "desc": [
@@ -55,7 +55,7 @@ CHARACTERS_DATA = [
         "id": "tempest_herald",
         "name": "TEMPEST HERALD",
         "title": "Conduit of Storms",
-        "hp": 72,
+        "hp": 76,
         "color": (60, 170, 255),
         "relic": "Storm Core (End-turn 5 Zap)",
         "desc": [
@@ -69,7 +69,7 @@ CHARACTERS_DATA = [
         "id": "radiant_templar",
         "name": "RADIANT TEMPLAR",
         "title": "Champion of the Dawn",
-        "hp": 85,
+        "hp": 88,
         "color": (245, 200, 60),
         "relic": "Sun Crest (Skills grant Thorns)",
         "desc": [

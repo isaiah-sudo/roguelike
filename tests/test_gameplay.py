@@ -40,8 +40,8 @@ class TestRoguelikeGameplay(unittest.TestCase):
     def test_playable_characters(self):
         # 1. Blood Knight
         knight = Player(char_id="blood_knight")
-        self.assertEqual(knight.hp, 80)
-        self.assertEqual(knight.max_hp, 80)
+        self.assertEqual(knight.hp, 84)
+        self.assertEqual(knight.max_hp, 84)
         self.assertEqual(knight.class_title, "Vanguard of Ruin")
         self.assertTrue(knight.has_relic("burning_blood"))
         # Check starter deck has Flex and Bash
@@ -51,7 +51,7 @@ class TestRoguelikeGameplay(unittest.TestCase):
 
         # 2. Shadow Assassin
         assassin = Player(char_id="shadow_assassin")
-        self.assertEqual(assassin.hp, 70)
+        self.assertEqual(assassin.hp, 75)
         self.assertEqual(assassin.class_title, "Nightshade Weaver")
         self.assertTrue(assassin.has_relic("ring_serpent"))
         assassin_names = [c.name for c in assassin.deck]
@@ -61,7 +61,7 @@ class TestRoguelikeGameplay(unittest.TestCase):
 
         # 3. Void Necromancer
         necro = Player(char_id="void_necromancer")
-        self.assertEqual(necro.hp, 68)
+        self.assertEqual(necro.hp, 76)
         self.assertEqual(necro.class_title, "Scion of the Abyss")
         self.assertTrue(necro.has_relic("soul_phylactery"))
         necro_names = [c.name for c in necro.deck]
@@ -398,7 +398,7 @@ class TestRoguelikeGameplay(unittest.TestCase):
         """Verifies Tempest Herald and Radiant Templar starters and relics."""
         # 1. Tempest Herald
         tempest = Player(char_id="tempest_herald")
-        self.assertEqual(tempest.hp, 72)
+        self.assertEqual(tempest.hp, 76)
         self.assertTrue(tempest.has_relic("storm_core"))
         tempest_cards = [c.name for c in tempest.deck]
         self.assertIn("Zap", tempest_cards)
@@ -408,7 +408,7 @@ class TestRoguelikeGameplay(unittest.TestCase):
 
         # 2. Radiant Templar
         templar = Player(char_id="radiant_templar")
-        self.assertEqual(templar.hp, 85)
+        self.assertEqual(templar.hp, 88)
         self.assertTrue(templar.has_relic("sun_crest"))
         templar_cards = [c.name for c in templar.deck]
         self.assertIn("Smite", templar_cards)
@@ -793,6 +793,150 @@ class TestRoguelikeGameplay(unittest.TestCase):
 
         # Clean up
         delete_save(1)
+
+    def test_radiant_templar_thorns_duration_and_non_stacking(self):
+        """Verifies Radiant Templar Thorns lasts 1 turn and cannot stack."""
+        templar = Player(char_id="radiant_templar")
+        self.assertEqual(templar.statuses.get("Thorns"), 0)
+
+        # Apply Thorns 3
+        templar.statuses.apply("Thorns", 3)
+        self.assertEqual(templar.statuses.get("Thorns"), 3)
+
+        # Attempt to stack Thorns 2 -> should not stack to 5, keeps max 3
+        templar.statuses.apply("Thorns", 2)
+        self.assertEqual(templar.statuses.get("Thorns"), 3)
+
+        # Attempt to apply higher Thorns 4 -> takes max 4, does not add to 7
+        templar.statuses.apply("Thorns", 4)
+        self.assertEqual(templar.statuses.get("Thorns"), 4)
+
+        # Next player turn starts -> 1-turn duration expires
+        templar.start_turn()
+        self.assertEqual(templar.statuses.get("Thorns"), 0)
+
+    def test_character_exclusive_card_pools(self):
+        """Verifies card rewards and shops generate character-exclusive cards and universal neutrals."""
+        from models.card import get_cards_for_character
+        from systems.reward import CombatReward
+        from systems.shop import Shop
+
+        # Test Radiant Templar pool
+        templar_pool = get_cards_for_character("radiant_templar")
+        templar_names = [cls().name for cls in templar_pool]
+        # Should contain Templar cards
+        self.assertIn("Smite", templar_names)
+        self.assertIn("Holy Shield", templar_names)
+        self.assertIn("Consecration", templar_names)
+        # Should contain Universal cards
+        self.assertIn("Defend", templar_names)
+        self.assertIn("Adrenaline", templar_names)
+        self.assertIn("Dark Shackles", templar_names)
+        self.assertIn("Apotheosis", templar_names)
+        # Should NOT contain exclusive cards of other classes
+        self.assertNotIn("Deadly Poison", templar_names)
+        self.assertNotIn("Blade Dance", templar_names)
+        self.assertNotIn("Zap", templar_names)
+        self.assertNotIn("Demon Form", templar_names)
+        self.assertNotIn("Soul Drain", templar_names)
+
+        # Test Shadow Assassin pool
+        assassin_pool = get_cards_for_character("shadow_assassin")
+        assassin_names = [cls().name for cls in assassin_pool]
+        self.assertIn("Deadly Poison", assassin_names)
+        self.assertIn("Blade Dance", assassin_names)
+        self.assertNotIn("Smite", assassin_names)
+        self.assertNotIn("Zap", assassin_names)
+
+        # Test CombatReward with char_id
+        reward = CombatReward(is_elite=False, is_boss=False, act=1, char_id="radiant_templar")
+        for card in reward.card_options:
+            self.assertIn(card.character, (None, "radiant_templar"))
+
+        # Test Shop with char_id
+        shop = Shop(char_id="radiant_templar")
+        for shop_item in shop.cards:
+            self.assertIn(shop_item.item.character, (None, "radiant_templar"))
+
+    def test_boss_nerfs_and_reverted_difficulty(self):
+        """Verifies boss intents, damage, and buffs have been tuned down."""
+        from models.enemy import NecrolordMalakor, VoidBehemoth, IgnisTheInfernal, ArchmageValerius, TheCorruptedHeart
+
+        # Malakor
+        malakor = NecrolordMalakor()
+        self.assertEqual(malakor.max_hp, 160)
+        combat = CombatState(Player(), [malakor], self.particle_mgr, self.screen_shake)
+        malakor.decide_intent(combat)
+        self.assertEqual(malakor.intent.desc, "Soul Barrier (+10 Block, +1 Str)")
+        malakor.turn_count = 1
+        malakor.decide_intent(combat)
+        self.assertEqual(malakor.intent.damage, 6)
+        malakor.turn_count = 3
+        malakor.decide_intent(combat)
+        self.assertEqual(malakor.intent.damage, 22)
+
+        # Void Behemoth
+        behemoth = VoidBehemoth()
+        behemoth.turn_count = 0
+        behemoth.decide_intent(combat)
+        self.assertEqual(behemoth.intent.damage, 4)
+        behemoth.turn_count = 2
+        behemoth.decide_intent(combat)
+        self.assertEqual(behemoth.intent.damage, 18)
+
+        # Ignis
+        ignis = IgnisTheInfernal()
+        self.assertEqual(ignis.statuses.get("Thorns"), 2)
+        ignis.turn_count = 0
+        ignis.decide_intent(combat)
+        self.assertEqual(ignis.intent.desc, "Molten Armor (+18 Block, +1 Str)")
+        ignis.turn_count = 3
+        ignis.decide_intent(combat)
+        self.assertEqual(ignis.intent.damage, 24)
+
+        # Archmage Valerius
+        valerius = ArchmageValerius()
+        valerius.turn_count = 0
+        valerius.decide_intent(combat)
+        self.assertEqual(valerius.intent.damage, 4)
+        valerius.turn_count = 2
+        valerius.decide_intent(combat)
+        self.assertEqual(valerius.intent.damage, 22)
+
+        # Heart
+        heart = TheCorruptedHeart()
+        self.assertEqual(heart.statuses.get("Thorns"), 1)
+        heart.turn_count = 2
+        heart.decide_intent(combat)
+        self.assertEqual(heart.intent.damage, 28)
+
+    def test_inspect_tooltips_functionality(self):
+        """Verifies tooltip rendering and inspect hover mechanics."""
+        from engine.ui import draw_tooltip, draw_top_bar
+        from views.shop_view import ShopView
+        from views.reward_view import RewardView
+        from systems.shop import Shop
+        from systems.reward import CombatReward
+
+        surf = pygame.Surface((1280, 720))
+
+        # Direct tooltip call
+        draw_tooltip(surf, 200, 200, "Sun Crest", "Whenever you play a Skill, gain 2 Thorns.", badge="RELIC")
+
+        # Top bar hover inspect test
+        player = Player(char_id="radiant_templar")
+        # Hover over first relic (relic x is 400..434, y is 8..42)
+        draw_top_bar(surf, player, 1, mouse_pos=(415, 20))
+
+        # Shop view inspect
+        shop = Shop(char_id="blood_knight")
+        sv = ShopView(shop, player)
+        sv.draw(surf)
+
+        # Reward view inspect
+        reward = CombatReward(is_elite=True, is_boss=False, act=1, char_id="blood_knight")
+        rv = RewardView(reward, player)
+        rv.draw(surf)
 
 if __name__ == "__main__":
     unittest.main()

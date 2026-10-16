@@ -26,28 +26,28 @@ class Player(Entity):
         if char_id == "shadow_assassin":
             name = "Shadow Assassin"
             self.class_title = "Nightshade Weaver"
-            max_hp = 70
+            max_hp = 75
         elif char_id == "void_necromancer":
             name = "Void Necromancer"
             self.class_title = "Scion of the Abyss"
-            max_hp = 68
+            max_hp = 76
         elif char_id == "tempest_herald":
             name = "Tempest Herald"
             self.class_title = "Conduit of the Storm"
-            max_hp = 72
+            max_hp = 76
         elif char_id == "radiant_templar":
             name = "Radiant Templar"
             self.class_title = "Champion of the Dawn"
-            max_hp = 85
+            max_hp = 88
         else:
             name = "Blood Knight"
             self.class_title = "Vanguard of Ruin"
-            max_hp = 80
+            max_hp = 84
 
         super().__init__(name, max_hp)
         self.max_energy = 3
         self.energy = self.max_energy
-        self.gold = 75
+        self.gold = 99
 
         # Combat Piles
         self.draw_pile = []
@@ -135,6 +135,10 @@ class Player(Entity):
     def start_turn(self):
         super().start_turn()
         self.energy = self.max_energy
+
+        # Radiant Templar Thorns lasts only one turn (persists through enemy turn, clears on player turn)
+        if self.char_id == "radiant_templar" and self.statuses.has("Thorns"):
+            self.statuses.reduce("Thorns", self.statuses.get("Thorns"))
 
         # Power effects: Demon Form
         demon_form = self.statuses.get("DemonForm")

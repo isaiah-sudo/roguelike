@@ -150,14 +150,14 @@ class CryptCultist(Enemy):
         if self.turn_count == 0:
             self.intent = Intent(IntentType.BUFF, desc="Incantation (+3 Ritual)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=8, desc="Dark Strike")
+            self.intent = Intent(IntentType.ATTACK, damage=6, desc="Dark Strike (6 DMG)")
 
     def execute_turn(self, combat_state, player):
         if self.turn_count == 0:
             self.statuses.apply("Ritual", 3)
             combat_state.spawn_buff_fx(self.x + 60, self.y + 60)
         else:
-            dmg = max(0, 8 + self.statuses.get("Strength"))
+            dmg = max(0, 6 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg)
@@ -174,9 +174,9 @@ class SkeletonSentinel(Enemy):
         if cycle == 0:
             self.intent = Intent(IntentType.DEFEND, desc="Bone Shield (12 Block)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.ATTACK, damage=10, desc="Cleave")
+            self.intent = Intent(IntentType.ATTACK, damage=8, desc="Cleave (8 DMG)")
         else:
-            self.intent = Intent(IntentType.ATTACK_DEBUFF, damage=6, desc="Shatter Strike (Vulnerable)")
+            self.intent = Intent(IntentType.ATTACK_DEBUFF, damage=5, desc="Shatter Strike (Vulnerable)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 3
@@ -184,12 +184,12 @@ class SkeletonSentinel(Enemy):
             self.gain_block(12)
             combat_state.spawn_block_fx(self.x + 60, self.y + 60)
         elif cycle == 1:
-            dmg = max(0, 10 + self.statuses.get("Strength"))
+            dmg = max(0, 8 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg)
         else:
-            dmg = max(0, 6 + self.statuses.get("Strength"))
+            dmg = max(0, 5 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg)
@@ -269,19 +269,19 @@ class PlagueRat(Enemy):
 
     def decide_intent(self, combat_state):
         if self.turn_count % 2 == 0:
-            self.intent = Intent(IntentType.ATTACK, damage=5, hits=2, desc="Venomous Bite (5x2)")
+            self.intent = Intent(IntentType.ATTACK, damage=4, hits=2, desc="Venomous Bite (4x2)")
         else:
-            self.intent = Intent(IntentType.DEBUFF, desc="Toxic Miasma (4 Poison, Weak)")
+            self.intent = Intent(IntentType.DEBUFF, desc="Toxic Miasma (3 Poison, Weak)")
 
     def execute_turn(self, combat_state, player):
         if self.turn_count % 2 == 0:
             for _ in range(2):
-                dmg = max(0, 5 + self.statuses.get("Strength"))
+                dmg = max(0, 4 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         else:
-            player.statuses.apply("Poison", 4)
+            player.statuses.apply("Poison", 3)
             player.statuses.apply("Weak", 1)
             combat_state.spawn_poison_fx(player.x + 60, player.y + 60)
         self.turn_count += 1
@@ -335,18 +335,18 @@ class VoidReaver(Enemy):
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 2
         if cycle == 0:
-            self.intent = Intent(IntentType.BUFF, desc="Eldritch Rage (+3 Str, +8 Block)")
+            self.intent = Intent(IntentType.BUFF, desc="Eldritch Rage (+2 Str, +6 Block)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=18, desc="Rending Cleave (18 DMG)")
+            self.intent = Intent(IntentType.ATTACK, damage=14, desc="Rending Cleave (14 DMG)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 2
         if cycle == 0:
-            self.statuses.apply("Strength", 3)
-            self.gain_block(8)
+            self.statuses.apply("Strength", 2)
+            self.gain_block(6)
             combat_state.spawn_buff_fx(self.x + 60, self.y + 60)
         else:
-            dmg = max(0, 18 + self.statuses.get("Strength"))
+            dmg = max(0, 14 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)
@@ -471,32 +471,32 @@ class NecrolordMalakor(Enemy):
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 4
         if cycle == 0:
-            self.intent = Intent(IntentType.BUFF, desc="Soul Barrier (+15 Block, +2 Str)")
+            self.intent = Intent(IntentType.BUFF, desc="Soul Barrier (+10 Block, +1 Str)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.ATTACK, damage=8, hits=3, desc="Death Ray (8x3)")
+            self.intent = Intent(IntentType.ATTACK, damage=6, hits=3, desc="Death Ray (6x3)")
         elif cycle == 2:
             self.intent = Intent(IntentType.BUFF, desc="Cataclysm Ritual (Charging!)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=32, desc="Apocalypse Blast (32 DMG)")
+            self.intent = Intent(IntentType.ATTACK, damage=22, desc="Apocalypse Blast (22 DMG)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 4
         if cycle == 0:
-            self.gain_block(15)
-            self.statuses.apply("Strength", 2)
+            self.gain_block(10)
+            self.statuses.apply("Strength", 1)
             combat_state.spawn_buff_fx(self.x + self.width // 2, self.y + 70)
         elif cycle == 1:
             for _ in range(3):
-                dmg = max(0, 8 + self.statuses.get("Strength"))
+                dmg = max(0, 6 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         elif cycle == 2:
-            self.statuses.apply("Strength", 3)
-            self.gain_block(10)
+            self.statuses.apply("Strength", 2)
+            self.gain_block(8)
             combat_state.spawn_buff_fx(self.x + self.width // 2, self.y + 70)
         else:
-            dmg = max(0, 32 + self.statuses.get("Strength"))
+            dmg = max(0, 22 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)
@@ -513,31 +513,31 @@ class VoidBehemoth(Enemy):
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 3
         if cycle == 0:
-            self.intent = Intent(IntentType.ATTACK, damage=5, hits=4, desc="Tentacle Thrash (5x4)")
+            self.intent = Intent(IntentType.ATTACK, damage=4, hits=4, desc="Tentacle Thrash (4x4)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.DEBUFF, desc="Abyssal Gaze (Weak 2, Vuln 2, 5 Poison)")
+            self.intent = Intent(IntentType.DEBUFF, desc="Abyssal Gaze (Weak 1, Vuln 1, 3 Poison)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=24, desc="Cosmic Devour (24 DMG, Heals 8)")
+            self.intent = Intent(IntentType.ATTACK, damage=18, desc="Cosmic Devour (18 DMG, Heals 5)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 3
         if cycle == 0:
             for _ in range(4):
-                dmg = max(0, 5 + self.statuses.get("Strength"))
+                dmg = max(0, 4 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         elif cycle == 1:
-            player.statuses.apply("Weak", 2)
-            player.statuses.apply("Vulnerable", 2)
-            player.statuses.apply("Poison", 5)
+            player.statuses.apply("Weak", 1)
+            player.statuses.apply("Vulnerable", 1)
+            player.statuses.apply("Poison", 3)
             combat_state.spawn_poison_fx(player.x + 60, player.y + 60)
         else:
-            dmg = max(0, 24 + self.statuses.get("Strength"))
+            dmg = max(0, 18 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)
-            self.heal(8)
+            self.heal(5)
         self.turn_count += 1
 
 # ==========================================
@@ -700,37 +700,37 @@ class IgnisTheInfernal(Enemy):
         self.color_secondary = (50, 15, 10)
         self.width = 175
         self.height = 205
-        self.statuses.apply("Thorns", 3)
+        self.statuses.apply("Thorns", 2)
 
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 4
         if cycle == 0:
-            self.intent = Intent(IntentType.BUFF, desc="Molten Armor (+25 Block, +2 Str)")
+            self.intent = Intent(IntentType.BUFF, desc="Molten Armor (+18 Block, +1 Str)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.ATTACK, damage=9, hits=3, desc="Magma Wave (9x3)")
+            self.intent = Intent(IntentType.ATTACK, damage=6, hits=3, desc="Magma Wave (6x3)")
         elif cycle == 2:
-            self.intent = Intent(IntentType.DEBUFF, desc="Suffocating Ash (Weak 2, Vuln 2)")
+            self.intent = Intent(IntentType.DEBUFF, desc="Suffocating Ash (Weak 1, Vuln 1)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=36, desc="Cataclysm Nova (36 DMG)")
+            self.intent = Intent(IntentType.ATTACK, damage=24, desc="Cataclysm Nova (24 DMG)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 4
         if cycle == 0:
-            self.gain_block(25)
-            self.statuses.apply("Strength", 2)
+            self.gain_block(18)
+            self.statuses.apply("Strength", 1)
             combat_state.spawn_buff_fx(self.x + self.width // 2, self.y + 70)
         elif cycle == 1:
             for _ in range(3):
-                dmg = max(0, 9 + self.statuses.get("Strength"))
+                dmg = max(0, 6 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         elif cycle == 2:
-            player.statuses.apply("Weak", 2)
-            player.statuses.apply("Vulnerable", 2)
+            player.statuses.apply("Weak", 1)
+            player.statuses.apply("Vulnerable", 1)
             combat_state.spawn_debuff_fx(player.x + 60, player.y + 60)
         else:
-            dmg = max(0, 36 + self.statuses.get("Strength"))
+            dmg = max(0, 24 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)
@@ -747,26 +747,26 @@ class ArchmageValerius(Enemy):
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 3
         if cycle == 0:
-            self.intent = Intent(IntentType.ATTACK, damage=5, hits=4, desc="Arcane Missiles (5x4)")
+            self.intent = Intent(IntentType.ATTACK, damage=4, hits=4, desc="Arcane Missiles (4x4)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.DEFEND, desc="Chrono Barrier (+30 Block, +2 Str)")
+            self.intent = Intent(IntentType.DEFEND, desc="Chrono Barrier (+18 Block, +1 Str)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=32, desc="Time Rupture (32 DMG)")
+            self.intent = Intent(IntentType.ATTACK, damage=22, desc="Time Rupture (22 DMG)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 3
         if cycle == 0:
             for _ in range(4):
-                dmg = max(0, 5 + self.statuses.get("Strength"))
+                dmg = max(0, 4 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         elif cycle == 1:
-            self.gain_block(30)
-            self.statuses.apply("Strength", 2)
+            self.gain_block(18)
+            self.statuses.apply("Strength", 1)
             combat_state.spawn_block_fx(self.x + self.width // 2, self.y + 70)
         else:
-            dmg = max(0, 32 + self.statuses.get("Strength"))
+            dmg = max(0, 22 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)
@@ -810,18 +810,18 @@ class NemesisAvatar(Enemy):
 
     def decide_intent(self, combat_state):
         if self.turn_count % 2 == 0:
-            self.intent = Intent(IntentType.BUFF, desc="Death Mantle (+1 Intangible, +3 Str)")
+            self.intent = Intent(IntentType.BUFF, desc="Death Mantle (+1 Intangible, +1 Str)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=11, hits=3, desc="Reaping Scythe (11x3)")
+            self.intent = Intent(IntentType.ATTACK, damage=8, hits=3, desc="Reaping Scythe (8x3)")
 
     def execute_turn(self, combat_state, player):
         if self.turn_count % 2 == 0:
             self.statuses.apply("Intangible", 1)
-            self.statuses.apply("Strength", 3)
+            self.statuses.apply("Strength", 1)
             combat_state.spawn_buff_fx(self.x + self.width // 2, self.y + 70)
         else:
             for _ in range(3):
-                dmg = max(0, 11 + self.statuses.get("Strength"))
+                dmg = max(0, 8 + self.statuses.get("Strength"))
                 if self.statuses.has("Weak"):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
@@ -834,16 +834,16 @@ class TheCorruptedHeart(Enemy):
         self.color_secondary = (40, 10, 18)
         self.width = 185
         self.height = 215
-        self.statuses.apply("Thorns", 2)
+        self.statuses.apply("Thorns", 1)
 
     def decide_intent(self, combat_state):
         cycle = self.turn_count % 3
         if cycle == 0:
             self.intent = Intent(IntentType.ATTACK, damage=3, hits=12, desc="Blood Barrage (3x12)")
         elif cycle == 1:
-            self.intent = Intent(IntentType.DEBUFF, desc="Echo of Damnation (Weak 3, Vuln 3, +3 Str)")
+            self.intent = Intent(IntentType.DEBUFF, desc="Echo of Damnation (Weak 1, Vuln 1, +1 Str)")
         else:
-            self.intent = Intent(IntentType.ATTACK, damage=45, desc="Heartthrob Cleave (45 DMG)")
+            self.intent = Intent(IntentType.ATTACK, damage=28, desc="Heartthrob Cleave (28 DMG)")
 
     def execute_turn(self, combat_state, player):
         cycle = self.turn_count % 3
@@ -854,12 +854,12 @@ class TheCorruptedHeart(Enemy):
                     dmg = int(dmg * 0.75)
                 combat_state.deal_attack_damage(self, player, dmg)
         elif cycle == 1:
-            player.statuses.apply("Weak", 3)
-            player.statuses.apply("Vulnerable", 3)
-            self.statuses.apply("Strength", 3)
+            player.statuses.apply("Weak", 1)
+            player.statuses.apply("Vulnerable", 1)
+            self.statuses.apply("Strength", 1)
             combat_state.spawn_debuff_fx(player.x + 60, player.y + 60)
         else:
-            dmg = max(0, 45 + self.statuses.get("Strength"))
+            dmg = max(0, 28 + self.statuses.get("Strength"))
             if self.statuses.has("Weak"):
                 dmg = int(dmg * 0.75)
             combat_state.deal_attack_damage(self, player, dmg, heavy=True)

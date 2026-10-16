@@ -42,8 +42,9 @@ STATUS_METADATA = {
 }
 
 class StatusManager:
-    def __init__(self):
+    def __init__(self, owner=None):
         self.statuses: Dict[str, int] = {}
+        self.owner = owner
 
     def get(self, name: str) -> int:
         return self.statuses.get(name, 0)
@@ -61,6 +62,14 @@ class StatusManager:
             if self.statuses["Artifact"] <= 0:
                 del self.statuses["Artifact"]
             return False  # Debuff blocked
+
+        # Radiant Templar Thorns cannot stack
+        if name == "Thorns" and getattr(self.owner, 'char_id', None) == 'radiant_templar':
+            if self.get("Thorns") <= 0:
+                self.statuses["Thorns"] = amount
+            else:
+                self.statuses["Thorns"] = max(self.statuses["Thorns"], amount)
+            return True
 
         self.statuses[name] = self.statuses.get(name, 0) + amount
         return True

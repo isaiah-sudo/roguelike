@@ -30,9 +30,11 @@ class TargetType(Enum):
     SELF = "self"
 
 class Card:
+    character: str | None = None
+
     def __init__(self, id_name: str, name: str, cost: int, card_type: CardType,
                  rarity: CardRarity, target_type: TargetType, description: str,
-                 exhaust: bool = False, innate: bool = False):
+                 exhaust: bool = False, innate: bool = False, character: str | None = None):
         self.id_name = id_name
         self.name = name
         self.cost = cost
@@ -42,6 +44,7 @@ class Card:
         self.description = description
         self.exhaust = exhaust
         self.innate = innate
+        self.character = character if character is not None else getattr(self.__class__, 'character', None)
         self.upgraded = False
 
     def clone(self):
@@ -1516,6 +1519,46 @@ ALL_CARD_CLASSES = [
     # Legendary Powers
     ApotheosisCard, EchoFormCard, OmnislashCard
 ]
+
+CHARACTER_CARD_MAPPINGS = {
+    "blood_knight": [
+        BashCard, IronWaveCard, FlexCard, CleaveCard, BattleTranceCard,
+        HeavyBladeCard, LimitBreakCard, WhirlwindCard, FeedCard, FiendFireCard,
+        SpotWeaknessCard, TrueGritCard, ArmamentsCard, BodySlamCard, EntrenchCard,
+        FlameBarrierCard, BarricadeCard, ImperviousCard, DemonFormCard, ClashCard
+    ],
+    "shadow_assassin": [
+        NeutralizeCard, DeadlyPoisonCard, BladeDanceCard, ShadowstepCard, GougeCard,
+        TerrorCard, CloakAndDaggerCard, AccuracyCard, InfiniteBladesCard, StormOfSteelCard,
+        FinisherCard, DoubleTapCard, BurstCard, BackflipCard, BouncingFlaskCard,
+        CripplingCloudCard, CatalystCard, NoxiousFumesCard, EnvenomCard, MalaiseCard,
+        FootworkCard, WraithFormCard
+    ],
+    "void_necromancer": [
+        SoulDrainCard, OfferingCard, CorpseExplosionCard, WarcryCard, HemokinesisCard,
+        RuptureCard, CombustionCard, BloodForBloodCard, ReaperCard, FeelNoPainCard,
+        DarkEmbraceCard, CorruptionCard, SecondWindCard, SeverSoulCard, ExhumationCard,
+        AbyssalEchoCard
+    ],
+    "tempest_herald": [
+        ZapCard, FrostBarrierCard, ThunderStrikeCard, StaticDischargeCard,
+        BallLightningCard, GlacierCard, BlizzardCard, ChainLightningCard, SuperconductorCard
+    ],
+    "radiant_templar": [
+        SmiteCard, HolyShieldCard, ConsecrationCard, RadiantVowCard,
+        HeavensFuryCard, JudgmentCard, DivineFavorCard
+    ]
+}
+
+for char_id, card_classes in CHARACTER_CARD_MAPPINGS.items():
+    for cls in card_classes:
+        cls.character = char_id
+
+def get_cards_for_character(char_id: str | None = None) -> list[type[Card]]:
+    """Returns card classes available to the specified character (exclusive cards + neutral cards)."""
+    if not char_id:
+        return list(ALL_CARD_CLASSES)
+    return [cls for cls in ALL_CARD_CLASSES if getattr(cls, 'character', None) in (None, char_id)]
 
 def get_starter_deck():
     """Default starter deck fallback."""

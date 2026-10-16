@@ -164,8 +164,8 @@ class Game:
     def ascend_to_next_act(self):
         """Ascend to the next Act after claiming boss loot, generating a new floor map with tougher foes."""
         self.current_act += 1
-        # Heal 40% max HP upon ascending
-        heal_amount = int(self.player.max_hp * 0.40)
+        # Heal 75% max HP upon ascending
+        heal_amount = int(self.player.max_hp * 0.75)
         self.player.heal(heal_amount)
         play_sfx('victory', 0.8)
 
@@ -188,7 +188,7 @@ class Game:
             self.current_view = RestView(self.player)
         elif ntype == NodeType.SHOP:
             self.state = "SHOP"
-            self.current_view = ShopView(Shop(), self.player)
+            self.current_view = ShopView(Shop(char_id=self.player.char_id), self.player)
         elif ntype == NodeType.EVENT:
             self.state = "EVENT"
             event = generate_random_event(self.player)
@@ -269,36 +269,20 @@ class Game:
                 ]
             enemies = random.choice(normal_pools)
 
-        # Scale monster stats dynamically for depth, Acts, Elites, and Bosses
-        current_floor = getattr(self.dungeon_map, 'current_floor', 0)
+        # Scale monster stats gently for deeper Acts
         hp_mult = 1.0
         bonus_str = 0
 
-        if self.current_act == 1:
-            if current_floor >= 4:
-                hp_mult += 0.10
-                bonus_str += 1
-            if current_floor >= 7:
-                hp_mult += 0.12
-        elif self.current_act == 2:
-            hp_mult += 0.30
-            bonus_str += 2
-            if current_floor >= 5:
-                hp_mult += 0.15
-                bonus_str += 1
-        elif self.current_act >= 3:
-            hp_mult += 0.55
-            bonus_str += 4
-            if current_floor >= 5:
-                hp_mult += 0.20
-                bonus_str += 1
-
-        if is_elite:
+        if self.current_act == 2:
             hp_mult += 0.15
-            bonus_str += 1
-        elif is_boss:
+        elif self.current_act >= 3:
             hp_mult += 0.25
             bonus_str += 1
+
+        if is_elite:
+            hp_mult += 0.10
+        elif is_boss:
+            hp_mult += 0.05
 
         for e in enemies:
             e.max_hp = int(e.max_hp * hp_mult)
@@ -382,7 +366,7 @@ class Game:
                     action = self.current_view.handle_event(event, mouse_pos)
                     if action == "victory":
                         self.state = "REWARD"
-                        reward = CombatReward(is_elite=self.is_current_elite, is_boss=self.is_current_boss, act=self.current_act)
+                        reward = CombatReward(is_elite=self.is_current_elite, is_boss=self.is_current_boss, act=self.current_act, char_id=self.player.char_id)
                         self.current_view = RewardView(reward, self.player)
                         self.save_current_run()
                     elif action == "defeat":

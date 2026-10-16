@@ -3,16 +3,17 @@ Combat Rewards: Card Drafting, Gold, Potions, and Relics.
 Includes 3-choice Boss Relic Draft upon defeating Act Bosses.
 """
 import random
-from models.card import ALL_CARD_CLASSES, Card, CardRarity
+from models.card import ALL_CARD_CLASSES, Card, CardRarity, get_cards_for_character
 from models.potion import ALL_POTIONS
 from models.relic import ALL_RELIC_CLASSES, BOSS_RELIC_CLASSES, Relic
 from engine.sound import play_sfx
 
 class CombatReward:
-    def __init__(self, is_elite: bool = False, is_boss: bool = False, act: int = 1):
+    def __init__(self, is_elite: bool = False, is_boss: bool = False, act: int = 1, char_id: str | None = None):
         self.is_elite = is_elite
         self.is_boss = is_boss
         self.act = act
+        self.char_id = char_id
         
         # Gold
         base_gold = random.randint(15, 25)
@@ -22,18 +23,19 @@ class CombatReward:
             base_gold = random.randint(110, 150)
         self.gold = base_gold
 
-        # Card rewards (Draft 3 cards)
+        # Card rewards (Draft 3 cards tailored to character)
+        available_cards = get_cards_for_character(char_id)
         self.card_options: list[Card] = []
         if is_boss:
             # Boss rewards: guaranteed high-tier rare & uncommon cards, all upgraded!
-            rare_pool = [c for c in ALL_CARD_CLASSES if getattr(c(), 'rarity', None) in (CardRarity.RARE, CardRarity.UNCOMMON)]
-            selected_classes = random.sample(rare_pool if len(rare_pool) >= 3 else ALL_CARD_CLASSES, 3)
+            rare_pool = [c for c in available_cards if getattr(c(), 'rarity', None) in (CardRarity.RARE, CardRarity.UNCOMMON)]
+            selected_classes = random.sample(rare_pool if len(rare_pool) >= 3 else available_cards, min(3, len(available_cards)))
             for cls in selected_classes:
                 card = cls()
                 card.upgrade()
                 self.card_options.append(card)
         else:
-            selected_classes = random.sample(ALL_CARD_CLASSES, min(3, len(ALL_CARD_CLASSES)))
+            selected_classes = random.sample(available_cards, min(3, len(available_cards)))
             for cls in selected_classes:
                 card = cls()
                 if random.random() < (0.35 if is_elite else 0.12):

@@ -6,7 +6,7 @@ import pygame
 import math
 from systems.shop import Shop, ShopItem
 from engine.card_renderer import draw_card, CARD_WIDTH, CARD_HEIGHT
-from engine.ui import Button, draw_top_bar
+from engine.ui import Button, draw_top_bar, draw_tooltip
 from engine.sound import play_sfx
 from settings import (
     COLOR_BG_DARK, COLOR_TEXT_LIGHT, COLOR_TEXT_GOLD, FONTS
@@ -247,8 +247,9 @@ class ShopView:
                     break
 
     def draw(self, surface):
+        mouse_pos = pygame.mouse.get_pos()
         surface.fill(COLOR_BG_DARK)
-        draw_top_bar(surface, self.player, 0)
+        draw_top_bar(surface, self.player, 0, mouse_pos=mouse_pos)
 
         if self.removing_card:
             title = FONTS['title'].render(f"PURGE A CARD FROM YOUR DECK ({len(self.player.deck)} Cards)", True, (255, 110, 110))
@@ -348,11 +349,14 @@ class ShopView:
                 sold_txt = FONTS['bold'].render("SOLD", True, (120, 110, 130))
                 surface.blit(sold_txt, sold_txt.get_rect(center=sold_rect.center))
 
+        hover_item_tooltip = None
+
         # 2. Relics for Sale
         for rect, item in self._get_shop_relic_rects():
             if not item.purchased:
-                pygame.draw.rect(surface, (40, 30, 50), rect, border_radius=8)
-                pygame.draw.rect(surface, (190, 150, 70), rect, width=1, border_radius=8)
+                is_hov = rect.collidepoint(mouse_pos)
+                pygame.draw.rect(surface, (55, 42, 68) if is_hov else (40, 30, 50), rect, border_radius=8)
+                pygame.draw.rect(surface, (255, 215, 80) if is_hov else (190, 150, 70), rect, width=2 if is_hov else 1, border_radius=8)
                 r_name = FONTS['bold'].render(item.item.name, True, (255, 230, 140))
                 surface.blit(r_name, (rect.x + 12, rect.y + 12))
 
@@ -360,6 +364,9 @@ class ShopView:
                 pygame.draw.circle(surface, (255, 215, 0), (rect.x + 20, rect.y + 48), 6)
                 r_cost = FONTS['small'].render(f"{item.cost} Gold", True, COLOR_TEXT_GOLD)
                 surface.blit(r_cost, (rect.x + 32, rect.y + 40))
+
+                if is_hov:
+                    hover_item_tooltip = (mouse_pos[0], mouse_pos[1] + 15, item.item.name, item.item.description, "SHOP RELIC", (255, 215, 0))
             else:
                 pygame.draw.rect(surface, (25, 20, 30), rect, border_radius=8)
                 sold_txt = FONTS['regular'].render("SOLD", True, (100, 95, 110))
@@ -368,18 +375,25 @@ class ShopView:
         # 3. Potions for Sale
         for rect, item in self._get_shop_potion_rects():
             if not item.purchased:
-                pygame.draw.rect(surface, (35, 40, 55), rect, border_radius=8)
-                pygame.draw.rect(surface, (100, 160, 200), rect, width=1, border_radius=8)
+                is_hov = rect.collidepoint(mouse_pos)
+                pygame.draw.rect(surface, (45, 55, 75) if is_hov else (35, 40, 55), rect, border_radius=8)
+                pygame.draw.rect(surface, (140, 200, 255) if is_hov else (100, 160, 200), rect, width=2 if is_hov else 1, border_radius=8)
                 p_name = FONTS['bold'].render(item.item.name, True, (160, 220, 255))
                 surface.blit(p_name, (rect.x + 12, rect.y + 10))
 
                 pygame.draw.circle(surface, (255, 215, 0), (rect.x + 20, rect.y + 40), 6)
                 p_cost = FONTS['small'].render(f"{item.cost} Gold", True, COLOR_TEXT_GOLD)
                 surface.blit(p_cost, (rect.x + 32, rect.y + 32))
+
+                if is_hov:
+                    hover_item_tooltip = (mouse_pos[0], mouse_pos[1] + 15, item.item.name, item.item.description, "SHOP POTION", (140, 200, 255))
             else:
                 pygame.draw.rect(surface, (25, 20, 30), rect, border_radius=8)
                 sold_txt = FONTS['regular'].render("SOLD", True, (100, 95, 110))
                 surface.blit(sold_txt, sold_txt.get_rect(center=rect.center))
+
+        if hover_item_tooltip:
+            draw_tooltip(surface, hover_item_tooltip[0], hover_item_tooltip[1], hover_item_tooltip[2], hover_item_tooltip[3], hover_item_tooltip[4], hover_item_tooltip[5])
 
         # Card Removal Button
         self.remove_card_btn.text = f"Purge Card ({self.shop.card_removal_cost} Gold)" if not self.shop.removal_used else "Card Purged"

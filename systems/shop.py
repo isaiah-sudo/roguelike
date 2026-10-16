@@ -2,7 +2,7 @@
 Merchant / Shop System: buy cards, relics, potions, and remove unwanted cards.
 """
 import random
-from models.card import ALL_CARD_CLASSES, Card
+from models.card import ALL_CARD_CLASSES, Card, get_cards_for_character
 from models.relic import ALL_RELIC_CLASSES, Relic
 from models.potion import ALL_POTIONS, Potion
 from engine.sound import play_sfx
@@ -14,7 +14,8 @@ class ShopItem:
         self.purchased = False
 
 class Shop:
-    def __init__(self):
+    def __init__(self, char_id: str | None = None):
+        self.char_id = char_id
         self.cards: list[ShopItem] = []
         self.relics: list[ShopItem] = []
         self.potions: list[ShopItem] = []
@@ -23,8 +24,9 @@ class Shop:
         self.generate_inventory()
 
     def generate_inventory(self):
-        # 5 Cards
-        selected_classes = random.sample(ALL_CARD_CLASSES, min(5, len(ALL_CARD_CLASSES)))
+        # 5 Cards tailored to character pool
+        available_cards = get_cards_for_character(self.char_id)
+        selected_classes = random.sample(available_cards, min(5, len(available_cards)))
         for cls in selected_classes:
             card = cls()
             cost = random.randint(45, 80)

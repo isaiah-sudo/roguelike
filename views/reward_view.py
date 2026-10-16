@@ -4,7 +4,7 @@ Reward View: Loot drafting screen after combat victory.
 import pygame
 from systems.reward import CombatReward
 from engine.card_renderer import draw_card, CARD_WIDTH, CARD_HEIGHT
-from engine.ui import Button, draw_top_bar
+from engine.ui import Button, draw_top_bar, draw_tooltip
 from engine.sound import play_sfx
 from settings import (
     COLOR_BG_DARK, COLOR_TEXT_LIGHT, COLOR_TEXT_GOLD, FONTS
@@ -149,8 +149,9 @@ class RewardView:
                     break
 
     def draw(self, surface):
+        mouse_pos = pygame.mouse.get_pos()
         surface.fill(COLOR_BG_DARK)
-        draw_top_bar(surface, self.player, 0)
+        draw_top_bar(surface, self.player, 0, mouse_pos=mouse_pos)
 
         if self.drafting_cards:
             title = FONTS['title'].render("CHOOSE A CARD", True, (240, 220, 160))
@@ -242,27 +243,38 @@ class RewardView:
             txt = FONTS['medium'].render(b_str, True, b_col)
             surface.blit(txt, txt.get_rect(center=boss_r_rect.center))
 
+        hover_tooltip = None
+
         # 4. Relic reward if present
         if self.reward.relic_reward:
             relic_rect = pygame.Rect(440, 360, 400, 48)
-            relic_bg = (40, 32, 50) if not self.reward.relic_claimed else (25, 20, 30)
+            is_hov = relic_rect.collidepoint(mouse_pos) if not self.reward.relic_claimed else False
+            relic_bg = (55, 42, 68) if is_hov else ((40, 32, 50) if not self.reward.relic_claimed else (25, 20, 30))
             pygame.draw.rect(surface, relic_bg, relic_rect, border_radius=8)
-            pygame.draw.rect(surface, (200, 160, 80), relic_rect, width=1, border_radius=8)
+            pygame.draw.rect(surface, (255, 215, 80) if is_hov else (200, 160, 80), relic_rect, width=2 if is_hov else 1, border_radius=8)
             relic_str = f"Relic: {self.reward.relic_reward.name} ({self.reward.relic_reward.description})" if not self.reward.relic_claimed else "Relic Claimed"
             txt_col = (255, 230, 140) if not self.reward.relic_claimed else (100, 95, 110)
             txt = FONTS['small'].render(relic_str, True, txt_col)
             surface.blit(txt, txt.get_rect(center=relic_rect.center))
+            if is_hov:
+                hover_tooltip = (mouse_pos[0], mouse_pos[1] + 15, self.reward.relic_reward.name, self.reward.relic_reward.description, "REWARD RELIC", (255, 215, 0))
 
         # 5. Potion reward if present
         if self.reward.potion_reward:
             pot_rect = pygame.Rect(440, 420, 400, 48)
-            pot_bg = (40, 32, 50) if not self.reward.potion_claimed else (25, 20, 30)
+            is_hov = pot_rect.collidepoint(mouse_pos) if not self.reward.potion_claimed else False
+            pot_bg = (45, 55, 75) if is_hov else ((40, 32, 50) if not self.reward.potion_claimed else (25, 20, 30))
             pygame.draw.rect(surface, pot_bg, pot_rect, border_radius=8)
-            pygame.draw.rect(surface, (120, 200, 140), pot_rect, width=1, border_radius=8)
+            pygame.draw.rect(surface, (160, 230, 255) if is_hov else (120, 200, 140), pot_rect, width=2 if is_hov else 1, border_radius=8)
             pot_str = f"Potion: {self.reward.potion_reward.name}" if not self.reward.potion_claimed else "Potion Claimed"
             txt_col = (140, 240, 160) if not self.reward.potion_claimed else (100, 95, 110)
             txt = FONTS['medium'].render(pot_str, True, txt_col)
             surface.blit(txt, txt.get_rect(center=pot_rect.center))
+            if is_hov:
+                hover_tooltip = (mouse_pos[0], mouse_pos[1] + 15, self.reward.potion_reward.name, self.reward.potion_reward.description, "REWARD POTION", (140, 200, 255))
+
+        if hover_tooltip:
+            draw_tooltip(surface, hover_tooltip[0], hover_tooltip[1], hover_tooltip[2], hover_tooltip[3], hover_tooltip[4], hover_tooltip[5])
 
         self.proceed_btn.draw(surface)
 

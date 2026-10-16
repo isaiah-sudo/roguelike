@@ -9,7 +9,7 @@ class Entity:
         self.max_hp = max_hp
         self.hp = max_hp
         self.block = 0
-        self.statuses = StatusManager()
+        self.statuses = StatusManager(owner=self)
         
         # Visual state
         self.x = 0

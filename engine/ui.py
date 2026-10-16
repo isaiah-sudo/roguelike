@@ -101,8 +101,80 @@ class HealthBar:
                 (sx, sy + shield_size // 3)
             ], 1)
 
-def draw_top_bar(surface, player, current_floor, screen_width=1280):
-    """Draw top header with Player stats, Floor, Gold, Potions, and Relics."""
+def draw_tooltip(surface, x, y, title, description, badge=None, badge_color=None, border_color=(200, 165, 80)):
+    """Renders a stylized fantasy tooltip clamped to screen boundaries."""
+    font_title = FONTS['bold']
+    font_desc = FONTS['small']
+    font_badge = FONTS.get('tiny', FONTS['small'])
+
+    title_surf = font_title.render(title, True, (255, 235, 140))
+    
+    # Word wrap description
+    max_desc_w = 260
+    words = description.split(" ")
+    lines = []
+    curr_line = ""
+    for w in words:
+        test = f"{curr_line} {w}".strip()
+        if font_desc.size(test)[0] <= max_desc_w:
+            curr_line = test
+        else:
+            if curr_line:
+                lines.append(curr_line)
+            curr_line = w
+    if curr_line:
+        lines.append(curr_line)
+
+    line_surfs = [font_desc.render(l, True, (215, 210, 230)) for l in lines]
+    
+    # Calculate box dimensions
+    tw = max(title_surf.get_width() + 10, max([s.get_width() for s in line_surfs] if line_surfs else [0]))
+    if badge:
+        tw = max(tw, title_surf.get_width() + font_badge.size(badge)[0] + 20)
+    box_w = max(200, tw + 24)
+    desc_h = sum(s.get_height() + 3 for s in line_surfs)
+    box_h = 36 + desc_h + 12
+
+    # Screen boundary clamp
+    screen_w, screen_h = surface.get_size()
+    box_x = min(x, screen_w - box_w - 10)
+    box_x = max(10, box_x)
+    box_y = y + 20
+    if box_y + box_h > screen_h - 10:
+        box_y = y - box_h - 10
+
+    # Draw tooltip card with shadow
+    shadow_rect = pygame.Rect(box_x + 3, box_y + 3, box_w, box_h)
+    pygame.draw.rect(surface, (10, 8, 15), shadow_rect, border_radius=8)
+
+    box_rect = pygame.Rect(box_x, box_y, box_w, box_h)
+    pygame.draw.rect(surface, (28, 22, 38), box_rect, border_radius=8)
+    pygame.draw.rect(surface, border_color, box_rect, width=2, border_radius=8)
+
+    # Render title
+    surface.blit(title_surf, (box_x + 12, box_y + 10))
+
+    # Badge if present
+    if badge:
+        b_color = badge_color or (180, 140, 240)
+        b_surf = font_badge.render(badge.upper(), True, b_color)
+        bx = box_x + box_w - b_surf.get_width() - 14
+        surface.blit(b_surf, (bx, box_y + 13))
+
+    # Divider line
+    pygame.draw.line(surface, (65, 55, 80), (box_x + 10, box_y + 32), (box_x + box_w - 10, box_y + 32), 1)
+
+    # Render description lines
+    curr_y = box_y + 38
+    for s in line_surfs:
+        surface.blit(s, (box_x + 12, curr_y))
+        curr_y += s.get_height() + 3
+
+def draw_top_bar(surface, player, current_floor, screen_width=1280, mouse_pos=None):
+    """Draw top header with Player stats, Floor, Gold, Potions, and Relics with hover inspect."""
+    if mouse_pos is None:
+        mouse_pos = pygame.mouse.get_pos()
+
     bar_rect = pygame.Rect(0, 0, screen_width, 50)
     pygame.draw.rect(surface, (20, 16, 26), bar_rect)
     pygame.draw.line(surface, (60, 50, 75), (0, 50), (screen_width, 50), 2)
@@ -119,25 +191,41 @@ def draw_top_bar(surface, player, current_floor, screen_width=1280):
     gold_txt = FONTS['bold'].render(f"{player.gold} Gold", True, COLOR_TEXT_GOLD)
     surface.blit(gold_txt, (270, 14))
 
+    hover_tooltip = None
+
     # Relics list
     rx = 400
     for relic in player.relics:
         relic_rect = pygame.Rect(rx, 8, 34, 34)
-        pygame.draw.rect(surface, (45, 35, 60), relic_rect, border_radius=6)
-        pygame.draw.rect(surface, (190, 150, 70), relic_rect, width=1, border_radius=6)
+        is_hov = relic_rect.collidepoint(mouse_pos)
+        bg_col = (65, 50, 85) if is_hov else (45, 35, 60)
+        border_col = (255, 215, 80) if is_hov else (190, 150, 70)
+        pygame.draw.rect(surface, bg_col, relic_rect, border_radius=6)
+        pygame.draw.rect(surface, border_col, relic_rect, width=2 if is_hov else 1, border_radius=6)
         
         # Relic icon letter
         initial = FONTS['bold'].render(relic.name[0], True, (255, 230, 120))
         surface.blit(initial, initial.get_rect(center=relic_rect.center))
+
+        if is_hov:
+            hover_tooltip = (mouse_pos[0], mouse_pos[1] + 15, relic.name, relic.description, "RELIC", (255, 215, 0))
         rx += 40
 
     # Potions list
     px = 850
     for i, potion in enumerate(player.potions):
         p_rect = pygame.Rect(px + i * 42, 8, 34, 34)
-        pygame.draw.rect(surface, (30, 25, 40), p_rect, border_radius=6)
+        is_hov = p_rect.collidepoint(mouse_pos)
+        bg_col = (45, 55, 75) if is_hov else (30, 25, 40)
+        pygame.draw.rect(surface, bg_col, p_rect, border_radius=6)
         if potion:
             pygame.draw.circle(surface, potion.color, p_rect.center, 12)
-            pygame.draw.rect(surface, (180, 160, 210), p_rect, width=1, border_radius=6)
+            border_col = (220, 230, 255) if is_hov else (180, 160, 210)
+            pygame.draw.rect(surface, border_col, p_rect, width=2 if is_hov else 1, border_radius=6)
+            if is_hov:
+                hover_tooltip = (mouse_pos[0], mouse_pos[1] + 15, potion.name, potion.description, "POTION", (140, 200, 255))
         else:
             pygame.draw.rect(surface, (60, 50, 70), p_rect, width=1, border_radius=6)
+
+    if hover_tooltip:
+        draw_tooltip(surface, hover_tooltip[0], hover_tooltip[1], hover_tooltip[2], hover_tooltip[3], hover_tooltip[4], hover_tooltip[5])
