@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/rougelike'
-    tag = 'v1.1'
+    tag = 'v1.2'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,35 +42,36 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.1 ⚔️💀
+        body_text = """# Crypt of the Necrolord v1.2 ⚔️💀
 
-## 🚀 What's New in v1.1
-- **Full Deck, Smithing & Purge Scrolling**:
-  - Smooth vertical scrolling across the entire deck view, campfire smithing/upgrade screen, and merchant purge ritual screen.
-  - Supports mouse wheel, draggable custom scrollbar, and keyboard navigation with full viewport clipping.
-  - Added convenient **CANCEL** buttons to both the card upgrade and card purge screens.
-- **Clean In-Place Update & Save Preservation**:
-  - The new Windows setup installer cleanly detects your existing installation and updates files in-place without overwriting or deleting your saved runs.
-  - Automatically handles running instances of the game before updating to prevent file locking.
-- **Combat Balance Overhaul**:
-  - Progressive depth and act monster scaling: deeper floors and higher acts dynamically scale monster vitality, strength, and elite/boss modifiers.
-  - Balanced act ascension healing from 75% down to 40% Max HP.
-  - Tuned starting economy and balanced relics (e.g., Sun Crest Retribution).
-  - Increased threat levels on early enemies (Cultist, Sentinel, Plague Fiend).
-- **Major Visual & Animation Polish**:
-  - **Trailing Ghost HP Bars**: Fighting game / AAA roguelike delayed amber damage bars on entities that smoothly slide down after attacks.
-  - **Animated Campfire**: Undulating multi-layered flame tongues, hot rising embers drifting upward, pulsing warm radial light, and glowing coals.
-  - **Card Visuals Overhaul**: Golden corner ribbons and metallic frames on upgraded cards, glowing hover halo auras, 3D beveled energy orbs, and gemstone rarity indicators.
-  - **Targeting Reticle**: Animated pulsing crosshairs with rotating brackets over targeted enemies.
-  - **Atmospheric Particles & Shockwaves**: Expanding attack shockwave rings, floating dungeon air motes, and lantern-lit merchant shop.
+## 🚀 What's New in v1.2
+- **Difficulty & Boss Tuning**:
+  - Reverted aggressive Act 1 floor scaling and monster Strength buffs to ensure fair and satisfying progression.
+  - Substantially nerfed boss damage, multi-hit flurries, and combat buffs across all major encounters (Necrolord Malakor, Void Behemoth, Ignis the Infernal, Archmage Valerius, The Corrupted Heart, Nemesis Avatar).
+  - Restored Act Ascension Healing to **75% Max HP** and restored starting gold to **99 Gold**.
+  - Reverted standard enemy damage spikes on Cultist, Skeletal Sentinel, Plague Fiend, and Void Reaver.
+- **Character Survival Rebalance**:
+  - Rebalanced core survivability across all 5 champions:
+    - **Blood Knight**: 84 Max HP
+    - **Shadow Assassin**: 75 Max HP
+    - **Void Necromancer**: 76 Max HP (better offsets self-harm card sacrifices)
+    - **Tempest Herald**: 76 Max HP
+    - **Radiant Templar**: 88 Max HP
+- **Radiant Templar Mechanics**:
+  - **1-Turn Thorns**: Retaliation Thorns persists through the enemy turn to strike back against incoming attacks, then clears at the start of your next turn.
+  - **Non-Stacking Thorns**: Re-applying Thorns refreshes to the maximum value rather than accumulating indefinitely.
+- **Character-Exclusive Card Pools**:
+  - Card rewards and shops now offer archetype cards unique to your chosen champion, alongside universal neutral spells.
+- **Inspect Tooltips**:
+  - Hovering over relics and potions across the top bar, merchant shop, and combat rewards displays stylized tooltips with full descriptions and effects.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.1.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.1.0_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.2.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.2.0_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.1',
+            'name': 'Crypt of the Necrolord v1.2',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -90,8 +91,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.1.0.exe',
-        'CryptOfTheNecrolord_v1.1.0_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.2.0.exe',
+        'CryptOfTheNecrolord_v1.2.0_win64.zip'
     ]
 
     for filename in files_to_upload:
