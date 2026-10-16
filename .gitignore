@@ -8,6 +8,7 @@ dist/
 build/
 installer_output/
 *.spec
+!CryptOfTheNecrolord.spec
 .env
 venv/
 saves/

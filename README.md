@@ -22,6 +22,10 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
   - **Targeting Reticle**: Animated pulsing crosshairs with rotating brackets over targeted enemies.
   - **Atmospheric Particles & Shockwaves**: Expanding attack shockwave rings, floating dungeon air motes, and lantern-lit merchant shop.
 
+## 📦 Downloads (v1.1)
+- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.1.0.exe`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.1/CryptOfTheNecrolord_Setup_v1.1.0.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
+- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.1.0_win64.zip`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.1/CryptOfTheNecrolord_v1.1.0_win64.zip)** *(Extract & play directly without installation)*
+
 ---
 
 ## 🌟 Key Features
