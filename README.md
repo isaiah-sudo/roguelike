@@ -1,39 +1,46 @@
 # Crypt of the Necrolord ⚔️💀
 *A Dark Fantasy Deckbuilding Roguelike built in Python & Pygame-CE*
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn-based tactical roguelike where you descend through procedural catacombs, draft lethal spellcards, discover eldritch relics, and battle monstrous horrors culminating in the ancient Necrolord Malakor.
 
 ---
 
-## 🚀 What's New in v1.1
-- **Full Deck, Smithing & Purge Scrolling**:
-  - Smooth vertical scrolling across the entire deck view, campfire smithing/upgrade screen, and merchant purge ritual screen.
-  - Supports mouse wheel, draggable custom scrollbar, and keyboard controls with full viewport clipping.
-  - Added convenient **CANCEL** buttons to both the card upgrade and card purge screens.
-- **Combat Balance Overhaul**:
-  - Progressive depth and act monster scaling: deeper floors and higher acts dynamically scale monster vitality, strength, and elite/boss modifiers.
-  - Balanced act ascension healing from 75% down to 40% Max HP.
-  - Tuned early-game economy and balanced relics (e.g., Sun Crest Retribution).
-  - Increased threat levels on early enemies (Cultist, Sentinel, Plague Fiend).
-- **Major Visual & Animation Polish**:
-  - **Trailing Ghost HP Bars**: Fighting game / AAA roguelike delayed amber damage bars on entities that smoothly slide down after attacks.
-  - **Animated Campfire**: Undulating multi-layered flame tongues, hot rising embers drifting upward, pulsing warm radial light, and glowing coals.
-  - **Card Visuals Overhaul**: Golden corner ribbons and metallic frames on upgraded cards, glowing hover halo auras, 3D beveled energy orbs, and gemstone rarity indicators.
-  - **Targeting Reticle**: Animated pulsing crosshairs with rotating brackets over targeted enemies.
-  - **Atmospheric Particles & Shockwaves**: Expanding attack shockwave rings, floating dungeon air motes, and lantern-lit merchant shop.
+## 🚀 What's New in v1.2
+- **Difficulty & Boss Tuning**:
+  - Reverted aggressive floor scaling and extra monster Strength buffs in Act 1 for balanced progression.
+  - Substantially nerfed boss damage and combat buffs (Necrolord Malakor, Void Behemoth, Ignis the Infernal, Archmage Valerius, The Corrupted Heart, Nemesis Avatar).
+  - Restored Act Ascension Healing to **75% Max HP** and restored starting economy to **99 Gold**.
+  - Reverted early enemy damage spikes (Cultist, Skeletal Sentinel, Plague Fiend, Void Reaver).
+- **Character Survival Rebalance**:
+  - Blood Knight: **84 Max HP**
+  - Shadow Assassin: **75 Max HP**
+  - Void Necromancer: **76 Max HP** (better offsets self-harm card costs)
+  - Tempest Herald: **76 Max HP**
+  - Radiant Templar: **88 Max HP**
+- **Radiant Templar Mechanics**:
+  - **1-Turn Thorns**: Retaliation Thorns persists through the enemy turn to strike back against incoming attacks, then clears at the start of your next turn.
+  - **Non-Stacking Thorns**: Re-applying Thorns refreshes to the maximum value rather than accumulating indefinitely.
+- **Character-Exclusive Card Pools**:
+  - Card rewards and shops now offer archetype cards unique to your chosen champion, alongside universal neutral spells.
+- **Inspect Tooltips**:
+  - Hovering over relics and potions across the top bar, merchant shop, and combat rewards displays stylized tooltips with descriptions.
 
-## 📦 Downloads (v1.1)
-- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.1.0.exe`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.1/CryptOfTheNecrolord_Setup_v1.1.0.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
-- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.1.0_win64.zip`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.1/CryptOfTheNecrolord_v1.1.0_win64.zip)** *(Extract & play directly without installation)*
+## 📦 Downloads (v1.2)
+- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.2.0.exe`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.2/CryptOfTheNecrolord_Setup_v1.2.0.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
+- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.2.0_win64.zip`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.2/CryptOfTheNecrolord_v1.2.0_win64.zip)** *(Extract & play directly without installation)*
 
 ---
 
 ## 🌟 Key Features
 
 1. **Multiple Playable Champions**:
-   - **The Blood Knight (Vanguard of Ruin)**: 80 Max HP. Starter Relic: *Burning Blood* (Heal 6 HP after combat). Specializes in Strength scaling (*Limit Break*, *Whirlwind*), self-harm berserk combos (*Rupture*, *Hemokinesis*), and impenetrable fortress defense (*Barricade*, *Entrench*, *Body Slam*).
-   - **The Shadow Assassin (Nightshade Weaver)**: 70 Max HP. Starter Relic: *Ring of the Serpent* (+2 cards drawn on Turn 1). Specializes in dual-dagger Shiv storms (*Accuracy*, *Blade Dance*, *Storm of Steel*), lethal Poison compounding (*Deadly Poison*, *Catalyst*, *Envenom*), and damage negation (*Wraith Form*, *Neutralize*).
-   - **The Void Necromancer (Scion of the Abyss)**: 68 Max HP. Starter Relic: *Soul Phylactery* (Deal 4 damage whenever any card is Exhausted). Specializes in dark soul sacrifice (*Offering*, *Soul Drain*), chain corpse detonations (*Corpse Explosion*), and free-casting demonic powers (*Corruption*, *Dark Embrace*, *Abyssal Echo*).
+   - **The Blood Knight (Vanguard of Ruin)**: 84 Max HP. Starter Relic: *Burning Blood* (Heal 6 HP after combat). Specializes in Strength scaling (*Limit Break*, *Whirlwind*), self-harm berserk combos (*Rupture*, *Hemokinesis*), and impenetrable fortress defense (*Barricade*, *Entrench*, *Body Slam*).
+   - **The Shadow Assassin (Nightshade Weaver)**: 75 Max HP. Starter Relic: *Ring of the Serpent* (+2 cards drawn on Turn 1). Specializes in dual-dagger Shiv storms (*Accuracy*, *Blade Dance*, *Storm of Steel*), lethal Poison compounding (*Deadly Poison*, *Catalyst*, *Envenom*), and damage negation (*Wraith Form*, *Neutralize*).
+   - **The Void Necromancer (Scion of the Abyss)**: 76 Max HP. Starter Relic: *Soul Phylactery* (Deal 4 damage whenever any card is Exhausted). Specializes in dark soul sacrifice (*Offering*, *Soul Drain*), chain corpse detonations (*Corpse Explosion*), and free-casting demonic powers (*Corruption*, *Dark Embrace*, *Abyssal Echo*).
+   - **The Tempest Herald (Conduit of the Storm)**: 76 Max HP. Starter Relic: *Storm Core* (Zap lowest-health enemy for 5 damage at end of turn). Specializes in lightning manipulation and vulnerable execution.
+   - **The Radiant Templar (Champion of the Dawn)**: 88 Max HP. Starter Relic: *Sun Crest* (Gain 2 Thorns for 1 turn upon playing a Skill). Specializes in holy retribution and judgment.
 
 2. **Diverse Enemy Types & Dynamic Fighting Styles**:
    - **Undead**: *Crypt Cultist* (Ritual scaler that escalates attack damage each round), *Skeletal Sentinel* (High block turtle with bone cleavers), *Tormented Wight* (Elite banshee that drains life and inflicts mass debuffs).
@@ -213,3 +220,9 @@ rougelike/
 └── tests/
     └── test_gameplay.py        # Automated test suite
 ```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
