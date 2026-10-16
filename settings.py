@@ -8,6 +8,8 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 FPS = 60
 TITLE = "CRYPT OF THE NECROLORD - Dark Fantasy Roguelike"
+GAME_VERSION = "1.4.0"
+GITHUB_REPO = "isaiah-sudo/rougelike"
 
 # Color Palette (Dark Gothic Fantasy)
 COLOR_BG_DARK = (15, 12, 19)
@@ -51,6 +53,7 @@ def init_fonts():
     """Initialize system or default fonts for clean UI rendering."""
     if not pygame.font.get_init():
         pygame.font.init()
+    FONTS['tiny'] = pygame.font.SysFont("georgia,times,arial", 12)
     FONTS['small'] = pygame.font.SysFont("georgia,times,arial", 14)
     FONTS['regular'] = pygame.font.SysFont("georgia,times,arial", 18)
     FONTS['bold'] = pygame.font.SysFont("georgia,times,arial", 18, bold=True)

@@ -7,29 +7,22 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 
 ---
 
-## 🚀 What's New in v1.2
-- **Difficulty & Boss Tuning**:
-  - Reverted aggressive floor scaling and extra monster Strength buffs in Act 1 for balanced progression.
-  - Substantially nerfed boss damage and combat buffs (Necrolord Malakor, Void Behemoth, Ignis the Infernal, Archmage Valerius, The Corrupted Heart, Nemesis Avatar).
-  - Restored Act Ascension Healing to **75% Max HP** and restored starting economy to **99 Gold**.
-  - Reverted early enemy damage spikes (Cultist, Skeletal Sentinel, Plague Fiend, Void Reaver).
-- **Character Survival Rebalance**:
-  - Blood Knight: **84 Max HP**
-  - Shadow Assassin: **75 Max HP**
-  - Void Necromancer: **76 Max HP** (better offsets self-harm card costs)
-  - Tempest Herald: **76 Max HP**
-  - Radiant Templar: **88 Max HP**
-- **Radiant Templar Mechanics**:
-  - **1-Turn Thorns**: Retaliation Thorns persists through the enemy turn to strike back against incoming attacks, then clears at the start of your next turn.
-  - **Non-Stacking Thorns**: Re-applying Thorns refreshes to the maximum value rather than accumulating indefinitely.
-- **Character-Exclusive Card Pools**:
-  - Card rewards and shops now offer archetype cards unique to your chosen champion, alongside universal neutral spells.
-- **Inspect Tooltips**:
-  - Hovering over relics and potions across the top bar, merchant shop, and combat rewards displays stylized tooltips with descriptions.
+## 🚀 What's New in v1.4
+- **Title Screen Auto-Updater**:
+  - Automatically queries the GitHub Releases API on a background thread when entering the title screen.
+  - Non-blocking asynchronous checks ensure silky-smooth 60 FPS rendering with zero frame stutter or freezing on launch.
+- **One-Click Download & Seamless Update**:
+  - Prominent gothic update card alerts you whenever a new version is released.
+  - Click **Download & Apply** to download the new update package with a live progress bar tracking percentage and megabytes.
+  - Click **Restart & Apply Update** to seamlessly launch the setup installer and update your installation in place without losing your save expeditions.
+- **In-Game Release Notes Viewer**:
+  - Click **Notes** to open a scrollable gothic parchment modal displaying the full release changelog and patch notes right inside the game.
+- **Manual Refresh & Status Indicators**:
+  - Interactive version bar in the title screen footer with status badges (`Up to date ✓`, `Checking...`, or `Offline`) and a manual **[Check]** / **[Retry]** button.
 
-## 📦 Downloads (v1.2)
-- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.2.0.exe`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.2/CryptOfTheNecrolord_Setup_v1.2.0.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
-- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.2.0_win64.zip`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.2/CryptOfTheNecrolord_v1.2.0_win64.zip)** *(Extract & play directly without installation)*
+## 📦 Downloads (v1.4)
+- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.4.0.exe`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.4/CryptOfTheNecrolord_Setup_v1.4.0.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
+- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.4.0_win64.zip`)](https://github.com/isaiah-sudo/rougelike/releases/download/v1.4/CryptOfTheNecrolord_v1.4.0_win64.zip)** *(Extract & play directly without installation)*
 
 ---
 
@@ -204,9 +197,10 @@ rougelike/
 │   ├── save_manager.py         # Multi-slot game serialization and recovery
 │   ├── events.py               # Gothic mystery encounters & choices
 │   ├── shop.py                 # Merchant shop & card removal service
-│   └── reward.py               # Post-battle card draft & loot tables
+│   ├── reward.py               # Post-battle card draft & loot tables
+│   └── updater.py              # Background update checker, asset downloader & installer launcher
 ├── views/
-│   ├── title_view.py           # Atmospheric main menu & Continue screen
+│   ├── title_view.py           # Atmospheric main menu, Continue & Auto-Update screen
 │   ├── load_game_view.py       # Expedition slot browser with stats & purge
 │   ├── char_select_view.py     # Hero class selection screen
 │   ├── combat_view.py          # Battlefield rendering & card interaction
@@ -218,7 +212,8 @@ rougelike/
 │   ├── deck_view.py            # Modal full deck viewer
 │   └── game_over_view.py       # Victory / Defeat end screen
 └── tests/
-    └── test_gameplay.py        # Automated test suite
+    ├── test_gameplay.py        # Gameplay mechanics test suite
+    └── test_updater.py         # Auto-updater & version comparison test suite
 ```
 
 ---

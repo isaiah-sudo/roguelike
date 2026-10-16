@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/rougelike'
-    tag = 'v1.2'
+    tag = 'v1.4'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,36 +42,28 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.2 ⚔️💀
+        body_text = """# Crypt of the Necrolord v1.4 ⚔️💀
 
-## 🚀 What's New in v1.2
-- **Difficulty & Boss Tuning**:
-  - Reverted aggressive Act 1 floor scaling and monster Strength buffs to ensure fair and satisfying progression.
-  - Substantially nerfed boss damage, multi-hit flurries, and combat buffs across all major encounters (Necrolord Malakor, Void Behemoth, Ignis the Infernal, Archmage Valerius, The Corrupted Heart, Nemesis Avatar).
-  - Restored Act Ascension Healing to **75% Max HP** and restored starting gold to **99 Gold**.
-  - Reverted standard enemy damage spikes on Cultist, Skeletal Sentinel, Plague Fiend, and Void Reaver.
-- **Character Survival Rebalance**:
-  - Rebalanced core survivability across all 5 champions:
-    - **Blood Knight**: 84 Max HP
-    - **Shadow Assassin**: 75 Max HP
-    - **Void Necromancer**: 76 Max HP (better offsets self-harm card sacrifices)
-    - **Tempest Herald**: 76 Max HP
-    - **Radiant Templar**: 88 Max HP
-- **Radiant Templar Mechanics**:
-  - **1-Turn Thorns**: Retaliation Thorns persists through the enemy turn to strike back against incoming attacks, then clears at the start of your next turn.
-  - **Non-Stacking Thorns**: Re-applying Thorns refreshes to the maximum value rather than accumulating indefinitely.
-- **Character-Exclusive Card Pools**:
-  - Card rewards and shops now offer archetype cards unique to your chosen champion, alongside universal neutral spells.
-- **Inspect Tooltips**:
-  - Hovering over relics and potions across the top bar, merchant shop, and combat rewards displays stylized tooltips with full descriptions and effects.
+## 🚀 What's New in v1.4
+- **Title Screen Auto-Updater**:
+  - Automatically queries the GitHub Releases API on a background daemon thread upon entering the title screen.
+  - Asynchronous non-blocking architecture ensures silky-smooth 60 FPS rendering with zero frame stutter or startup freezing.
+- **One-Click Download & Seamless Update**:
+  - Prominent gothic update card alerts you whenever a new version is released.
+  - Click **Download & Apply** to download the new update package with a live progress bar tracking percentage and megabytes.
+  - Click **Restart & Apply Update** to seamlessly launch the setup installer and update your installation in place without losing your save expeditions.
+- **In-Game Release Notes Viewer**:
+  - Click **Notes** to open a scrollable gothic parchment modal displaying the full release changelog and patch notes right inside the game.
+- **Manual Refresh & Status Indicators**:
+  - Interactive version bar in the title screen footer with status badges (`Up to date ✓`, `Checking...`, or `Offline`) and a manual **[Check]** / **[Retry]** button.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.2.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.2.0_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.4.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.4.0_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.2',
+            'name': 'Crypt of the Necrolord v1.4',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -91,8 +83,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.2.0.exe',
-        'CryptOfTheNecrolord_v1.2.0_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.4.0.exe',
+        'CryptOfTheNecrolord_v1.4.0_win64.zip'
     ]
 
     for filename in files_to_upload:

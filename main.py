@@ -331,6 +331,9 @@ class Game:
                     elif action == "quit":
                         self.running = False
                         break
+                    elif action == "quit_for_update":
+                        self.running = False
+                        break
 
                 # Load Game / Slot Selection State
                 elif self.state == "LOAD_GAME":

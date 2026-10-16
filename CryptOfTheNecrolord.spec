@@ -35,6 +35,8 @@ a = Analysis(
         'systems.reward',
         'systems.save_manager',
         'systems.shop',
+        'systems.updater',
+        'urllib.request',
         'views.char_select_view',
         'views.combat_view',
         'views.deck_view',
