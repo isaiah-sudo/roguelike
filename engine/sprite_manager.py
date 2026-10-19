@@ -191,6 +191,14 @@ class SpriteManager:
             print(f"[SpriteManager] Error loading enemy sprite {sprite_key}: {e}")
             return None
 
+    def get_enemy_head_y(self, enemy, y: int, height: int) -> int:
+        """Returns the top Y coordinate of the enemy's visual sprite."""
+        res = self.get_enemy_sprite(enemy, target_h=height + 25)
+        if res:
+            sprite, _ = res
+            return (y + height) - sprite.get_height()
+        return y
+
     def _get_drop_shadow(self, width: int, height: int = 24) -> pygame.Surface:
         key = (width, height)
         if key in self._shadow_cache:
@@ -213,12 +221,11 @@ class SpriteManager:
         sprite, flash = res
         sw, sh = sprite.get_size()
 
-        # Idle breathing animation (subtle stretch and bobbing)
-        t = self._time * 2.8
-        bob_y = math.sin(t) * 3.5
-        stretch = 1.0 + math.sin(t) * 0.02
-        cur_h = int(sh * stretch)
-        scaled_sprite = pygame.transform.smoothscale(flash if player.flash_timer > 0 else sprite, (sw, cur_h))
+        # Smooth, calm respiratory breathing curve with ease-in-out easing
+        t = self._time * 1.6
+        breath = (math.sin(t) + 1.0) * 0.5
+        smooth_breath = breath * breath * (3.0 - 2.0 * breath)
+        bob_y = -smooth_breath * 3.5
 
         # Ground anchor (bottom-center aligned)
         ground_x = x + width // 2
@@ -228,9 +235,10 @@ class SpriteManager:
         shadow = self._get_drop_shadow(width=int(sw * 0.75), height=22)
         surface.blit(shadow, shadow.get_rect(center=(ground_x, ground_y - 2)))
 
-        # Draw character sprite
-        sprite_rect = scaled_sprite.get_rect(midbottom=(ground_x, int(ground_y + bob_y)))
-        surface.blit(scaled_sprite, sprite_rect)
+        # Draw character sprite (crisp native scaling without texture shimmer)
+        active_sprite = flash if player.flash_timer > 0 else sprite
+        sprite_rect = active_sprite.get_rect(midbottom=(ground_x, int(ground_y + bob_y)))
+        surface.blit(active_sprite, sprite_rect)
         return True
 
     def draw_enemy_sprite(self, surface: pygame.Surface, enemy, x: int, y: int, width: int, height: int) -> bool:
@@ -241,13 +249,12 @@ class SpriteManager:
         sprite, flash = res
         sw, sh = sprite.get_size()
 
-        # Phase offset based on x position so multiple enemies don't breathe in perfect sync
+        # Phase offset based on x position so multiple enemies don't breathe in lockstep
         phase = (x % 500) / 100.0
-        t = self._time * 2.5 + phase
-        bob_y = math.sin(t) * 3.0
-        stretch = 1.0 + math.sin(t) * 0.02
-        cur_h = int(sh * stretch)
-        scaled_sprite = pygame.transform.smoothscale(flash if enemy.flash_timer > 0 else sprite, (sw, cur_h))
+        t = self._time * 1.6 + phase
+        breath = (math.sin(t) + 1.0) * 0.5
+        smooth_breath = breath * breath * (3.0 - 2.0 * breath)
+        bob_y = -smooth_breath * 3.0
 
         ground_x = x + width // 2
         ground_y = y + height
@@ -257,6 +264,7 @@ class SpriteManager:
         surface.blit(shadow, shadow.get_rect(center=(ground_x, ground_y - 2)))
 
         # Draw enemy sprite
-        sprite_rect = scaled_sprite.get_rect(midbottom=(ground_x, int(ground_y + bob_y)))
-        surface.blit(scaled_sprite, sprite_rect)
+        active_sprite = flash if enemy.flash_timer > 0 else sprite
+        sprite_rect = active_sprite.get_rect(midbottom=(ground_x, int(ground_y + bob_y)))
+        surface.blit(active_sprite, sprite_rect)
         return True

@@ -76,10 +76,13 @@ class Enemy(Entity):
     def draw_intent(self, surface):
         if not self.intent or not self.is_alive():
             return
+        from engine.sprite_manager import SpriteManager
         ex = int(self.x + self.lunge_x)
         ix = ex + self.width // 2
-        offset = 75 if self.is_boss else (50 if self.is_elite else 35)
-        iy = self.y - offset
+
+        # Dynamically position intent cleanly above the enemy's visual sprite
+        head_y = SpriteManager.get().get_enemy_head_y(self, self.y, self.height)
+        iy = head_y - 34
 
         itype = self.intent.intent_type
         if itype in (IntentType.ATTACK, IntentType.ATTACK_DEBUFF):
@@ -99,6 +102,10 @@ class Enemy(Entity):
         if text:
             rendered = FONTS['intent'].render(text, True, color)
             rect = rendered.get_rect(center=(ix, iy + 18))
+            badge = rect.inflate(10, 4)
+            badge_surf = pygame.Surface(badge.size, pygame.SRCALPHA)
+            pygame.draw.rect(badge_surf, (15, 12, 20, 190), badge_surf.get_rect(), border_radius=4)
+            surface.blit(badge_surf, badge.topleft)
             surface.blit(rendered, rect)
 
     def draw(self, surface):
