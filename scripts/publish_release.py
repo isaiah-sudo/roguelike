@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/roguelike'
-    tag = 'v1.6'
+    tag = 'v1.6.1'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,31 +42,36 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.6 ⚔️🎨
+        body_text = """# Crypt of the Necrolord v1.6.1 ⚔️🛡️
 
-## 🚀 What's New in v1.6
-- **Complete Card Art Overhaul (All 84 Cards!)**:
-  - Every single card across all 5 champions and neutral spell pools now features rich, custom-crafted, dark fantasy illustrations rendered at 2x super-sampled resolution (`260x128`).
-  - **Warrior & Blade Archetypes**: Slashing greatswords, crushing warhammers, wide sweeping cleaves, berserker buster blades, flaming horned skulls, and dual spinning whirlwinds.
-  - **Shadow Assassin & Poison**: Sleek throwing stilettos, bubbling toxic flasks, skull detonators, venom-coiled serpents, hooded assassin silhouettes, and ethereal wraiths.
-  - **Bastion & Fortifications**: Steel heater shields with brass bosses, glowing forge anvils and hammers, stone battlement walls, blazing flame bucklers, and crystal diamond fortresses.
-  - **Tempest & Ice**: Crackling plasma orbs, branching lightning bolts, ground-splitting thunder strikes, glacial peaks, and subzero blizzard tempests.
-  - **Radiant Templar**: Beams of divine holy light, golden Latin crosses, angelic feathered wings, sacred scriptures, and scales of divine retribution.
-  - **Void Necromancy**: Grim reaper scythes, soul-siphoning tendrils, severed soul orbs, hands clawing out of grave mounds, and bleeding corrupt grimoires.
-  - **Buffs & Power Engines**: Surging adrenaline hearts, flexing muscular power rings, glowing third eyes, glaring crimson rage eyes, and shattering golden chains.
-- **Enhanced Card Frames & Foil Highlights**:
-  - Ornate art frames with deep inner bevels and top-edge specular gleams.
-  - Upgraded cards feature lustrous golden borders and enhanced foil sheen.
-- **Optimized Asset Pipeline**:
-  - High-performance in-memory caching ensures instantaneous rendering and silky-smooth 60 FPS combat with zero lag.
+## 🚀 What's New in v1.6.1
+- **Handcrafted Vector Character & Enemy Art Overhaul**:
+  - Replaced AI-generated bitmap cutouts with detailed, procedural vector art tailored to the game's gothic dark fantasy aesthetic (zero AI artifacts or clashing photorealism).
+  - **Blood Knight**: Multi-tone obsidian and crimson plate armor, spiked great helm, glowing fuller blade, and crimson aura.
+  - **Shadow Assassin**: Hooded stealth cowl, dual poisoned stilettos with toxic edge drips, and shadowy mantle.
+  - **Void Necromancer**: Tattered occult sorcerer robes, demonic horned skull mask, and levitating soul-siphoning phylactery staff.
+  - **Tempest Herald**: Cerulean electric vestments, levitating conduit crystal, and crackling lightning sparks.
+  - **Radiant Templar**: Gilded heavy plate armor, golden sun cross breastplate, holy warhammer, and sun tower shield.
+- **Detailed Enemies & Bosses**:
+  - **Cultists**: Occult hoods, sacrificial daggers, skull amulets, and open grimoires.
+  - **Skeleton Sentinels**: Ribcages, bone broadswords, runic heater shields, and horned iron bascinets.
+  - **Dread Spiders**: Chitinous fangs, multi-jointed barbed legs, venomous mandibles, and multiple glowing eyes.
+  - **Void Reavers**: Muscular abyssal fiends with curved horns and void-forged cleavers.
+  - **Necrolord Malakor**: Towering skeletal boss with golden spiked crown, levitating posture, and skull-tipped relic staff.
+- **Smoother Organic Breathing**:
+  - Character and enemy idle breathing now uses a continuous ease-in-out curve with dynamic ground drop shadows and zero pixel shimmering.
+- **Non-Clipping Intent Icons**:
+  - Enemy action intents float dynamically above horns, crowns, and staves with high clearance badges so they never clip into sprites.
+- **Vector Character Select Portraits**:
+  - Framed, crisp vector portraits on character select cards matching in-game battle avatars.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.6.0_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.1.exe` (Recommended - clean install / upgrade with desktop shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.6.1_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.6',
+            'name': 'Crypt of the Necrolord v1.6.1',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -86,8 +91,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.6.0.exe',
-        'CryptOfTheNecrolord_v1.6.0_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.6.1.exe',
+        'CryptOfTheNecrolord_v1.6.1_win64.zip'
     ]
 
     for filename in files_to_upload:

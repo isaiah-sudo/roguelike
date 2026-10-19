@@ -18,6 +18,7 @@ a = Analysis(
         'pygame.image',
         'pygame.transform',
         'engine.card_renderer',
+        'engine.character_renderer',
         'engine.particles',
         'engine.sound',
         'engine.sprite_manager',

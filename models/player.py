@@ -171,23 +171,10 @@ class Player(Entity):
 
     def draw(self, surface):
         """Renders custom dark fantasy hero avatar depending on class."""
-        from engine.sprite_manager import SpriteManager
+        from engine.character_renderer import CharacterRenderer
         px = int(self.x + self.lunge_x)
-        if SpriteManager.get().draw_player_sprite(surface, self, px, self.y, self.width, self.height):
-            return
-
         flash = self.flash_timer > 0
-
-        if self.char_id == "shadow_assassin":
-            self._draw_assassin(surface, flash)
-        elif self.char_id == "void_necromancer":
-            self._draw_necromancer(surface, flash)
-        elif self.char_id == "tempest_herald":
-            self._draw_tempest(surface, flash)
-        elif self.char_id == "radiant_templar":
-            self._draw_templar(surface, flash)
-        else:
-            self._draw_knight(surface, flash)
+        CharacterRenderer.get().draw_hero(surface, self.char_id, px, self.y, self.width, self.height, flash=flash)
 
     def _draw_tempest(self, surface, flash):
         # Tempest Herald: Electric sapphire robes, lightning catalyst, storm aura

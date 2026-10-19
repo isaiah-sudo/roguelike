@@ -2,7 +2,7 @@
 ; Dark Fantasy Deckbuilding Roguelike
 
 #define MyAppName "Crypt of the Necrolord"
-#define MyAppVersion "1.6.0"
+#define MyAppVersion "1.6.1"
 #define MyAppPublisher "Dark Spire Studio"
 #define MyAppURL "https://github.com/isaiah-sudo/roguelike"
 #define MyAppUpdatesURL "https://github.com/isaiah-sudo/roguelike/releases"

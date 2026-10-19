@@ -76,12 +76,12 @@ class Enemy(Entity):
     def draw_intent(self, surface):
         if not self.intent or not self.is_alive():
             return
-        from engine.sprite_manager import SpriteManager
+        from engine.character_renderer import CharacterRenderer
         ex = int(self.x + self.lunge_x)
         ix = ex + self.width // 2
 
         # Dynamically position intent cleanly above the enemy's visual sprite
-        head_y = SpriteManager.get().get_enemy_head_y(self, self.y, self.height)
+        head_y = CharacterRenderer.get().get_enemy_head_y(self, self.y, self.height)
         iy = head_y - 34
 
         itype = self.intent.intent_type
@@ -109,41 +109,10 @@ class Enemy(Entity):
             surface.blit(rendered, rect)
 
     def draw(self, surface):
-        from engine.sprite_manager import SpriteManager
+        from engine.character_renderer import CharacterRenderer
         ex = int(self.x + self.lunge_x)
-        if not SpriteManager.get().draw_enemy_sprite(surface, self, ex, self.y, self.width, self.height):
-            flash = self.flash_timer > 0
-            color = (255, 255, 255) if flash else self.color_primary
-            bg = (240, 200, 200) if flash else self.color_secondary
-
-            # Monster body
-            rect = pygame.Rect(ex + 15, self.y + 30, self.width - 30, self.height - 40)
-            pygame.draw.rect(surface, bg, rect, border_radius=12)
-            pygame.draw.rect(surface, color, rect, width=3, border_radius=12)
-
-            # Spikes / Horns
-            horn_pts_left = [(ex + 20, self.y + 30), (ex + 5, self.y + 5), (ex + 35, self.y + 25)]
-            horn_pts_right = [(ex + self.width - 20, self.y + 30), (ex + self.width - 5, self.y + 5), (ex + self.width - 35, self.y + 25)]
-            pygame.draw.polygon(surface, color, horn_pts_left)
-            pygame.draw.polygon(surface, color, horn_pts_right)
-
-            # Eyes
-            eye_y = self.y + 60
-            eye_color = (255, 240, 80) if not self.is_boss else (255, 40, 50)
-            pygame.draw.circle(surface, eye_color, (ex + 40, eye_y), 6)
-            pygame.draw.circle(surface, eye_color, (ex + self.width - 40, eye_y), 6)
-
-            # Boss crown
-            if self.is_boss:
-                crown_pts = [
-                    (ex + 30, self.y + 20),
-                    (ex + 45, self.y - 10),
-                    (ex + self.width // 2, self.y + 5),
-                    (ex + self.width - 45, self.y - 10),
-                    (ex + self.width - 30, self.y + 20)
-                ]
-                pygame.draw.polygon(surface, (255, 215, 0), crown_pts)
-
+        flash = self.flash_timer > 0
+        CharacterRenderer.get().draw_enemy(surface, self, ex, self.y, self.width, self.height, flash=flash)
         self.draw_intent(surface)
 
 # ==========================================

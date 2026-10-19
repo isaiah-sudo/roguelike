@@ -4,7 +4,7 @@ Character Selection View: Select hero class before descending into the Crypt.
 import pygame
 from engine.ui import Button
 from engine.sound import play_sfx
-from engine.sprite_manager import SpriteManager
+from engine.character_renderer import CharacterRenderer
 from settings import (
     COLOR_BG_DARK, COLOR_TEXT_LIGHT, COLOR_TEXT_GOLD, FONTS
 )
@@ -141,6 +141,7 @@ class CharSelectView:
         return rects
 
     def update(self, dt, mouse_pos):
+        CharacterRenderer.get().update(dt)
         self.start_btn.update(mouse_pos)
         self.back_btn.update(mouse_pos)
 
@@ -180,9 +181,7 @@ class CharSelectView:
             port_w = rect.width - 16
             port_h = 115
             port_rect = pygame.Rect(rect.x + 8, rect.y + 44, port_w, port_h)
-            portrait = SpriteManager.get().get_portrait(data["id"], (port_w, port_h))
-            if portrait:
-                surface.blit(portrait, port_rect)
+            CharacterRenderer.get().draw_hero_portrait(surface, data["id"], port_rect)
             pygame.draw.rect(surface, data["color"] if is_selected else (65, 52, 75), port_rect, width=1, border_radius=6)
 
             # Class Title

@@ -7,16 +7,21 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 
 ---
 
-## 🚀 What's New in v1.5.1
+## 🚀 What's New in v1.6.1
+- **Handcrafted Vector Character & Enemy Art Overhaul**:
+  - Replaced AI-generated bitmap cutouts with detailed, procedural vector art tailored to the game's gothic dark fantasy aesthetic (zero AI artifacts or clashing photorealism).
+  - **5 Playable Champions**: Detailed multi-tone armor, glowing weapon runes, ninja hoods with dual poisoned stilettos, skull masks with soul staves, lightning conduit crystals, and sun cross shields.
+  - **Enemies & Bosses**: Occult cultists, skeletal sentinels with bone broadswords & shields, dread spiders with venom fangs, void reavers with curved cleavers, and towering Necrolord Malakor.
 - **Silky Smooth Respiratory Animation**:
-  - Replaced frame-by-frame integer resampling with a continuous ease-in-out smoothstep curve, eliminating texture shimmering on weapons, robes, and eyes during idle breathing.
+  - Idle breathing with continuous ease-in-out smoothstep bobbing, soft drop shadows, and zero shimmering.
 - **Dynamic Head Clearance & Intent Elevation**:
-  - Real-time sprite boundary detection dynamically calculates the exact top boundary of every enemy, elite, and boss.
-  - Intent icons and damage indicators now float with guaranteed headroom above crowns, horns, and hoods, with frosted dark backing pills for readability.
+  - Enemy action intents float dynamically above horns, crowns, and staves with high clearance badges so they never clip into sprites.
+- **Vector Character Select Portraits**:
+  - Framed vector portraits on character select cards matching in-game battle avatars.
 
-## 📦 Downloads (v1.5.1)
-- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.5.1.exe`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.5.1/CryptOfTheNecrolord_Setup_v1.5.1.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
-- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.5.1_win64.zip`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.5.1/CryptOfTheNecrolord_v1.5.1_win64.zip)** *(Extract & play directly without installation)*
+## 📦 Downloads (v1.6.1)
+- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.6.1.exe`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.1/CryptOfTheNecrolord_Setup_v1.6.1.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
+- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.6.1_win64.zip`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.1/CryptOfTheNecrolord_v1.6.1_win64.zip)** *(Extract & play directly without installation)*
 
 ---
 

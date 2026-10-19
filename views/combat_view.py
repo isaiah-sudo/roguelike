@@ -11,6 +11,7 @@ from models.card import TargetType
 from engine.card_renderer import draw_card, CARD_WIDTH, CARD_HEIGHT
 from engine.visual_fx import draw_targeting_arrow
 from engine.ui import Button, draw_top_bar
+from engine.character_renderer import CharacterRenderer
 from engine.sprite_manager import SpriteManager
 from settings import (
     COLOR_BG_DARK, COLOR_ENERGY_ORB, COLOR_TEXT_LIGHT, COLOR_TEXT_GOLD,
@@ -138,6 +139,7 @@ class CombatView:
 
     def update(self, dt, mouse_pos):
         self.anim_time += dt
+        CharacterRenderer.get().update(dt)
         SpriteManager.get().update(dt)
 
         # Update staged combat state & timers
