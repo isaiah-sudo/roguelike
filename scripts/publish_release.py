@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/roguelike'
-    tag = 'v1.5.1'
+    tag = 'v1.6'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,22 +42,31 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.5.1 ⚔️✨
+        body_text = """# Crypt of the Necrolord v1.6 ⚔️🎨
 
-## 🚀 What's New in v1.5.1
-- **Silky Smooth Respiratory Animation**:
-  - Replaced frame-by-frame integer scaling with an ease-in-out smoothstep curve (`breath^2 * (3 - 2*breath)`), eliminating texture shimmering and pixel jittering on weapons, robes, and eyes.
-- **Dynamic Head Clearance & Intent Elevation**:
-  - Real-time sprite boundary calculation dynamically determines the exact top boundary of every enemy, elite, and boss.
-  - Intent icons and damage indicators now float with guaranteed headroom above crowns, horns, and hoods, with frosted dark backing pills for readability.
+## 🚀 What's New in v1.6
+- **Complete Card Art Overhaul (All 84 Cards!)**:
+  - Every single card across all 5 champions and neutral spell pools now features rich, custom-crafted, dark fantasy illustrations rendered at 2x super-sampled resolution (`260x128`).
+  - **Warrior & Blade Archetypes**: Slashing greatswords, crushing warhammers, wide sweeping cleaves, berserker buster blades, flaming horned skulls, and dual spinning whirlwinds.
+  - **Shadow Assassin & Poison**: Sleek throwing stilettos, bubbling toxic flasks, skull detonators, venom-coiled serpents, hooded assassin silhouettes, and ethereal wraiths.
+  - **Bastion & Fortifications**: Steel heater shields with brass bosses, glowing forge anvils and hammers, stone battlement walls, blazing flame bucklers, and crystal diamond fortresses.
+  - **Tempest & Ice**: Crackling plasma orbs, branching lightning bolts, ground-splitting thunder strikes, glacial peaks, and subzero blizzard tempests.
+  - **Radiant Templar**: Beams of divine holy light, golden Latin crosses, angelic feathered wings, sacred scriptures, and scales of divine retribution.
+  - **Void Necromancy**: Grim reaper scythes, soul-siphoning tendrils, severed soul orbs, hands clawing out of grave mounds, and bleeding corrupt grimoires.
+  - **Buffs & Power Engines**: Surging adrenaline hearts, flexing muscular power rings, glowing third eyes, glaring crimson rage eyes, and shattering golden chains.
+- **Enhanced Card Frames & Foil Highlights**:
+  - Ornate art frames with deep inner bevels and top-edge specular gleams.
+  - Upgraded cards feature lustrous golden borders and enhanced foil sheen.
+- **Optimized Asset Pipeline**:
+  - High-performance in-memory caching ensures instantaneous rendering and silky-smooth 60 FPS combat with zero lag.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.5.1.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.5.1_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.6.0_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.5.1',
+            'name': 'Crypt of the Necrolord v1.6',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -77,8 +86,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.5.1.exe',
-        'CryptOfTheNecrolord_v1.5.1_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.6.0.exe',
+        'CryptOfTheNecrolord_v1.6.0_win64.zip'
     ]
 
     for filename in files_to_upload:

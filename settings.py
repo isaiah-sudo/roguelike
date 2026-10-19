@@ -8,7 +8,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 FPS = 60
 TITLE = "CRYPT OF THE NECROLORD - Dark Fantasy Roguelike"
-GAME_VERSION = "1.5.1"
+GAME_VERSION = "1.6.0"
 GITHUB_REPO = "isaiah-sudo/roguelike"
 
 # Color Palette (Dark Gothic Fantasy)

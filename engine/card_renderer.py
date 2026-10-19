@@ -10,6 +10,7 @@ from settings import (
     COLOR_ATTACK, COLOR_SKILL, COLOR_POWER, COLOR_CURSE,
     COLOR_TEXT_LIGHT, COLOR_TEXT_MUTED, COLOR_ENERGY_ORB, FONTS
 )
+from engine.sprite_manager import SpriteManager
 
 CARD_WIDTH = 150
 CARD_HEIGHT = 210
@@ -111,44 +112,55 @@ def draw_card(surface, card: Card, x: int, y: int, is_hovered: bool = False, is_
     # Illustration Window
     art_rect = pygame.Rect(x + 10, y + int(38 * custom_scale), w - 20, int(64 * custom_scale))
     pygame.draw.rect(surface, (18, 14, 24), art_rect, border_radius=6)
-    pygame.draw.rect(surface, (65, 50, 75), art_rect, width=1, border_radius=6)
 
-    # Art emblem in the illustration window
-    center_art = art_rect.center
-    if card.card_type == CardType.ATTACK:
-        # Cross swords with hilt and guard
-        pygame.draw.line(surface, type_color, (center_art[0] - 18, center_art[1] - 16), (center_art[0] + 18, center_art[1] + 16), 3)
-        pygame.draw.line(surface, type_color, (center_art[0] + 18, center_art[1] - 16), (center_art[0] - 18, center_art[1] + 16), 3)
-        pygame.draw.line(surface, accent_color, (center_art[0] - 14, center_art[1] - 12), (center_art[0] + 14, center_art[1] + 12), 1)
-        # Blade gleam
-        pygame.draw.circle(surface, (255, 255, 255), (center_art[0] - 16, center_art[1] - 14), 2)
-    elif card.card_type == CardType.SKILL:
-        # Heraldic shield emblem with inner cross
-        pygame.draw.polygon(surface, type_color, [
-            (center_art[0], center_art[1] - 16),
-            (center_art[0] + 16, center_art[1] - 7),
-            (center_art[0], center_art[1] + 18),
-            (center_art[0] - 16, center_art[1] - 7)
-        ])
-        pygame.draw.polygon(surface, accent_color, [
-            (center_art[0], center_art[1] - 13),
-            (center_art[0] + 12, center_art[1] - 5),
-            (center_art[0], center_art[1] + 14),
-            (center_art[0] - 12, center_art[1] - 5)
-        ], 1)
-        pygame.draw.line(surface, (255, 255, 255), (center_art[0], center_art[1] - 8), (center_art[0], center_art[1] + 10), 2)
-    elif card.card_type == CardType.POWER:
-        # Mystic occult rune with core star
-        pygame.draw.circle(surface, type_color, center_art, 16, 2)
-        pygame.draw.circle(surface, accent_color, center_art, 10, 1)
-        pygame.draw.circle(surface, (255, 240, 255), center_art, 4)
-        pygame.draw.line(surface, (255, 255, 255), (center_art[0] - 8, center_art[1]), (center_art[0] + 8, center_art[1]), 1)
-        pygame.draw.line(surface, (255, 255, 255), (center_art[0], center_art[1] - 8), (center_art[0], center_art[1] + 8), 1)
+    # 1. High-fidelity custom illustration from SpriteManager
+    card_art = SpriteManager.get().get_card_art(card.id_name, (art_rect.width, art_rect.height))
+    if card_art is not None:
+        surface.blit(card_art, art_rect)
     else:
-        # Horned Skull emblem
-        pygame.draw.circle(surface, (130, 45, 120), center_art, 14)
-        pygame.draw.circle(surface, (20, 10, 20), (center_art[0] - 5, center_art[1] - 2), 3)
-        pygame.draw.circle(surface, (20, 10, 20), (center_art[0] + 5, center_art[1] - 2), 3)
+        # Fallback procedural emblem if image asset is not present
+        center_art = art_rect.center
+        if card.card_type == CardType.ATTACK:
+            # Cross swords with hilt and guard
+            pygame.draw.line(surface, type_color, (center_art[0] - 18, center_art[1] - 16), (center_art[0] + 18, center_art[1] + 16), 3)
+            pygame.draw.line(surface, type_color, (center_art[0] + 18, center_art[1] - 16), (center_art[0] - 18, center_art[1] + 16), 3)
+            pygame.draw.line(surface, accent_color, (center_art[0] - 14, center_art[1] - 12), (center_art[0] + 14, center_art[1] + 12), 1)
+            pygame.draw.circle(surface, (255, 255, 255), (center_art[0] - 16, center_art[1] - 14), 2)
+        elif card.card_type == CardType.SKILL:
+            # Heraldic shield emblem with inner cross
+            pygame.draw.polygon(surface, type_color, [
+                (center_art[0], center_art[1] - 16),
+                (center_art[0] + 16, center_art[1] - 7),
+                (center_art[0], center_art[1] + 18),
+                (center_art[0] - 16, center_art[1] - 7)
+            ])
+            pygame.draw.polygon(surface, accent_color, [
+                (center_art[0], center_art[1] - 13),
+                (center_art[0] + 12, center_art[1] - 5),
+                (center_art[0], center_art[1] + 14),
+                (center_art[0] - 12, center_art[1] - 5)
+            ], 1)
+            pygame.draw.line(surface, (255, 255, 255), (center_art[0], center_art[1] - 8), (center_art[0], center_art[1] + 10), 2)
+        elif card.card_type == CardType.POWER:
+            # Mystic occult rune with core star
+            pygame.draw.circle(surface, type_color, center_art, 16, 2)
+            pygame.draw.circle(surface, accent_color, center_art, 10, 1)
+            pygame.draw.circle(surface, (255, 240, 255), center_art, 4)
+            pygame.draw.line(surface, (255, 255, 255), (center_art[0] - 8, center_art[1]), (center_art[0] + 8, center_art[1]), 1)
+            pygame.draw.line(surface, (255, 255, 255), (center_art[0], center_art[1] - 8), (center_art[0], center_art[1] + 8), 1)
+        else:
+            # Horned Skull emblem
+            pygame.draw.circle(surface, (130, 45, 120), center_art, 14)
+            pygame.draw.circle(surface, (20, 10, 20), (center_art[0] - 5, center_art[1] - 2), 3)
+            pygame.draw.circle(surface, (20, 10, 20), (center_art[0] + 5, center_art[1] - 2), 3)
+
+    # Ornate inner frame border for the art window
+    art_border_col = (225, 190, 80) if card.upgraded else (75, 60, 90)
+    pygame.draw.rect(surface, art_border_col, art_rect, width=1, border_radius=6)
+    # Subtle top edge specular gleam
+    gleam_surf = pygame.Surface((art_rect.width - 12, 1), pygame.SRCALPHA)
+    gleam_surf.fill((255, 255, 255, 60 if not card.upgraded else 100))
+    surface.blit(gleam_surf, (art_rect.left + 6, art_rect.top + 1))
 
     # Rarity Gem underneath art
     rarity = getattr(card, 'rarity', CardRarity.COMMON)

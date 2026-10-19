@@ -16,6 +16,7 @@ else:
 CHAR_SPRITES_DIR = os.path.join(ASSETS_DIR, "sprites", "characters")
 ENEMY_SPRITES_DIR = os.path.join(ASSETS_DIR, "sprites", "enemies")
 PORTRAITS_DIR = os.path.join(ASSETS_DIR, "portraits")
+CARDS_DIR = os.path.join(ASSETS_DIR, "cards")
 
 # Enemy class/name mapping to available sprite keys
 ENEMY_SPRITE_MAP = {
@@ -61,6 +62,7 @@ class SpriteManager:
         self._sprite_cache: dict[str, pygame.Surface] = {}
         self._flash_cache: dict[str, pygame.Surface] = {}
         self._portraits_cache: dict[str, pygame.Surface] = {}
+        self._cards_cache: dict[str, pygame.Surface] = {}
         self._shadow_cache: dict[tuple[int, int], pygame.Surface] = {}
         self._time = 0.0
 
@@ -95,6 +97,31 @@ class SpriteManager:
             return scaled
         except Exception as e:
             print(f"[SpriteManager] Error loading portrait {char_id}: {e}")
+            return None
+
+    def get_card_art(self, card_id: str, size: tuple[int, int] = (130, 64)) -> Optional[pygame.Surface]:
+        cache_key = f"{card_id}_{size[0]}x{size[1]}"
+        if cache_key in self._cards_cache:
+            return self._cards_cache[cache_key]
+
+        path = os.path.join(CARDS_DIR, f"{card_id}.png")
+        if not os.path.exists(path):
+            return None
+
+        try:
+            raw = self._load_image(path)
+            scaled = pygame.transform.smoothscale(raw, size)
+
+            # Round the corners with SRCALPHA mask
+            mask_surf = pygame.Surface(size, pygame.SRCALPHA)
+            mask_surf.fill((0, 0, 0, 0))
+            pygame.draw.rect(mask_surf, (255, 255, 255, 255), (0, 0, size[0], size[1]), border_radius=6)
+            scaled.blit(mask_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+            self._cards_cache[cache_key] = scaled
+            return scaled
+        except Exception as e:
+            print(f"[SpriteManager] Error loading card art {card_id}: {e}")
             return None
 
     def _create_white_flash_surface(self, surface: pygame.Surface) -> pygame.Surface:
