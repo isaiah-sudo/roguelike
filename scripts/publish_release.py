@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/roguelike'
-    tag = 'v1.5'
+    tag = 'v1.5.1'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,27 +42,22 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.5 ⚔️🎨
+        body_text = """# Crypt of the Necrolord v1.5.1 ⚔️✨
 
-## 🎨 What's New in v1.5 - The Visual & Art Overhaul
-- **High-Fidelity Hand-Drawn Character Art (Darkest Dungeon / Slay the Spire Style)**:
-  - **All 5 Playable Champions**: Full-body combat sprites and framed character select portraits for *Blood Knight*, *Shadow Assassin*, *Void Necromancer*, *Tempest Herald*, and *Radiant Templar*.
-  - **Monster & Boss Artwork**: High-detail combat sprites for *Crypt Cultist*, *Skeletal Sentinel*, *Dread Spider*, *Void Reaver*, and the final boss *Necrolord Malakor*.
-- **Dynamic Sprite Engine (`engine/sprite_manager.py`)**:
-  - Smooth idle breathing and bobbing animations during combat encounters.
-  - White flash silhouette effect on taking damage.
-  - Multi-layered soft drop shadows beneath combatant feet to ground them in the dungeon.
-  - Directional sprite orientation (enemies automatically face left toward the hero).
-- **Overhauled Character Selection Screen**:
-  - Each champion's selection card now features an artistic framed portrait with matching class color borders and balanced stat summaries.
+## 🚀 What's New in v1.5.1
+- **Silky Smooth Respiratory Animation**:
+  - Replaced frame-by-frame integer scaling with an ease-in-out smoothstep curve (`breath^2 * (3 - 2*breath)`), eliminating texture shimmering and pixel jittering on weapons, robes, and eyes.
+- **Dynamic Head Clearance & Intent Elevation**:
+  - Real-time sprite boundary calculation dynamically determines the exact top boundary of every enemy, elite, and boss.
+  - Intent icons and damage indicators now float with guaranteed headroom above crowns, horns, and hoods, with frosted dark backing pills for readability.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.5.0.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.5.0_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.5.1.exe` (Recommended - installs or cleanly updates existing game with desktop/start menu shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.5.1_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.5',
+            'name': 'Crypt of the Necrolord v1.5.1',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -82,8 +77,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.5.0.exe',
-        'CryptOfTheNecrolord_v1.5.0_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.5.1.exe',
+        'CryptOfTheNecrolord_v1.5.1_win64.zip'
     ]
 
     for filename in files_to_upload:
