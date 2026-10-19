@@ -20,7 +20,7 @@ def main():
         print("[ERROR] Could not retrieve GitHub token from git credentials.")
         sys.exit(1)
 
-    repo = 'isaiah-sudo/rougelike'
+    repo = 'isaiah-sudo/roguelike'
     tag = 'v1.5'
     headers = {
         'Authorization': f'Bearer {token}',
