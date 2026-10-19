@@ -171,6 +171,11 @@ class Player(Entity):
 
     def draw(self, surface):
         """Renders custom dark fantasy hero avatar depending on class."""
+        from engine.sprite_manager import SpriteManager
+        px = int(self.x + self.lunge_x)
+        if SpriteManager.get().draw_player_sprite(surface, self, px, self.y, self.width, self.height):
+            return
+
         flash = self.flash_timer > 0
 
         if self.char_id == "shadow_assassin":

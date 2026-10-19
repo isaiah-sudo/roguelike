@@ -20,6 +20,7 @@ a = Analysis(
         'engine.card_renderer',
         'engine.particles',
         'engine.sound',
+        'engine.sprite_manager',
         'engine.ui',
         'engine.visual_fx',
         'models.card',

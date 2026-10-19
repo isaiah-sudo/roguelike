@@ -4,6 +4,7 @@ Character Selection View: Select hero class before descending into the Crypt.
 import pygame
 from engine.ui import Button
 from engine.sound import play_sfx
+from engine.sprite_manager import SpriteManager
 from settings import (
     COLOR_BG_DARK, COLOR_TEXT_LIGHT, COLOR_TEXT_GOLD, FONTS
 )
@@ -169,53 +170,62 @@ class CharSelectView:
             pygame.draw.rect(surface, border_color, rect, width=border_width, border_radius=12)
 
             # Class Header Banner
-            header_rect = pygame.Rect(rect.x, rect.y, rect.width, 46)
+            header_rect = pygame.Rect(rect.x, rect.y, rect.width, 38)
             pygame.draw.rect(surface, data["color"], header_rect, border_top_left_radius=12, border_top_right_radius=12)
             
             c_name = FONTS['bold'].render(data["name"], True, (255, 255, 255))
             surface.blit(c_name, c_name.get_rect(center=header_rect.center))
 
+            # Champion Portrait Artwork
+            port_w = rect.width - 16
+            port_h = 115
+            port_rect = pygame.Rect(rect.x + 8, rect.y + 44, port_w, port_h)
+            portrait = SpriteManager.get().get_portrait(data["id"], (port_w, port_h))
+            if portrait:
+                surface.blit(portrait, port_rect)
+            pygame.draw.rect(surface, data["color"] if is_selected else (65, 52, 75), port_rect, width=1, border_radius=6)
+
             # Class Title
             c_title = FONTS['small'].render(data["title"], True, (240, 220, 150))
-            surface.blit(c_title, c_title.get_rect(center=(rect.centerx, rect.y + 64)))
+            surface.blit(c_title, c_title.get_rect(center=(rect.centerx, rect.y + 172)))
 
             # Health & Starting Stats
             hp_txt = FONTS['bold'].render(f"HP: {data['hp']}  |  3 Energy", True, (240, 80, 90))
-            surface.blit(hp_txt, hp_txt.get_rect(center=(rect.centerx, rect.y + 96)))
+            surface.blit(hp_txt, hp_txt.get_rect(center=(rect.centerx, rect.y + 194)))
 
             # Divider line
-            pygame.draw.line(surface, (65, 52, 75), (rect.x + 15, rect.y + 118), (rect.right - 15, rect.y + 118), 1)
+            pygame.draw.line(surface, (65, 52, 75), (rect.x + 15, rect.y + 210), (rect.right - 15, rect.y + 210), 1)
 
             # Starter Relic
             relic_title = FONTS['bold'].render("Relic:", True, COLOR_TEXT_GOLD)
-            surface.blit(relic_title, (rect.x + 14, rect.y + 130))
+            surface.blit(relic_title, (rect.x + 12, rect.y + 218))
             relic_name = FONTS['small'].render(data["relic"], True, (230, 220, 245))
-            surface.blit(relic_name, (rect.x + 14, rect.y + 154))
+            surface.blit(relic_name, (rect.x + 12, rect.y + 238))
 
             # Description Paragraph
             desc_title = FONTS['bold'].render("Fighting Style:", True, COLOR_TEXT_GOLD)
-            surface.blit(desc_title, (rect.x + 14, rect.y + 190))
+            surface.blit(desc_title, (rect.x + 12, rect.y + 264))
 
-            dy = rect.y + 215
+            dy = rect.y + 284
             for line in data["desc"]:
                 d_surf = FONTS['small'].render(line, True, (200, 195, 215))
-                surface.blit(d_surf, (rect.x + 14, dy))
-                dy += 20
+                surface.blit(d_surf, (rect.x + 12, dy))
+                dy += 18
 
             # Starter Deck summary
             deck_title = FONTS['bold'].render("Starter Deck:", True, COLOR_TEXT_GOLD)
-            surface.blit(deck_title, (rect.x + 14, rect.y + 295))
+            surface.blit(deck_title, (rect.x + 12, rect.y + 348))
             deck_words = data["starter_cards"].split(", ")
-            dky = rect.y + 320
+            dky = rect.y + 368
             half = len(deck_words) // 2
             for dw in [deck_words[:half], deck_words[half:]]:
                 dk_surf = FONTS['small'].render(", ".join(dw), True, (170, 160, 190))
-                surface.blit(dk_surf, (rect.x + 14, dky))
-                dky += 18
+                surface.blit(dk_surf, (rect.x + 12, dky))
+                dky += 16
 
             # Selection Highlight indicator at bottom of card
             if is_selected:
-                sel_box = pygame.Rect(rect.x + 30, rect.bottom - 44, rect.width - 60, 30)
+                sel_box = pygame.Rect(rect.x + 25, rect.bottom - 42, rect.width - 50, 30)
                 pygame.draw.rect(surface, data["color"], sel_box, border_radius=6)
                 sel_txt = FONTS['bold'].render("SELECTED", True, (255, 255, 255))
                 surface.blit(sel_txt, sel_txt.get_rect(center=sel_box.center))
