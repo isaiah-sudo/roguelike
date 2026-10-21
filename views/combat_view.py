@@ -13,6 +13,7 @@ from engine.visual_fx import draw_targeting_arrow
 from engine.ui import Button, draw_top_bar
 from engine.character_renderer import CharacterRenderer
 from engine.sprite_manager import SpriteManager
+from engine.sound import play_sfx
 from settings import (
     COLOR_BG_DARK, COLOR_ENERGY_ORB, COLOR_TEXT_LIGHT, COLOR_TEXT_GOLD,
     COLOR_HEALTH_RED, COLOR_HEALTH_BG, COLOR_BLOCK_BLUE, FONTS

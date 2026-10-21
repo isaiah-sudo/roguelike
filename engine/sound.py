@@ -122,4 +122,7 @@ class SoundManager:
             pass
 
 def play_sfx(name: str, volume: float = 0.6):
-    SoundManager.get_instance().play(name, volume)
+    try:
+        SoundManager.get_instance().play(name, volume)
+    except Exception:
+        pass

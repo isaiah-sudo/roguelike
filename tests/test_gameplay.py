@@ -1108,6 +1108,28 @@ class TestRoguelikeGameplay(unittest.TestCase):
         self.assertEqual(divine_favor.cost, 1)
         self.assertEqual(divine_favor.block_val, 8)
 
+    def test_combat_view_anger_limit_click_sfx(self):
+        """Verifies clicking Anger when limit is reached triggers popup and sfx without error."""
+        from views.combat_view import CombatView
+        player = Player(char_id="blood_knight")
+        enemy = CryptCultist()
+        combat = CombatState(player, [enemy], self.particle_mgr, self.screen_shake)
+        view = CombatView(combat)
+
+        anger = AngerCard()
+        player.hand = [anger]
+        combat.anger_plays_this_turn = 3
+
+        # Click on the card
+        card_rects = view._get_hand_card_rects()
+        self.assertEqual(len(card_rects), 1)
+        rect, _ = card_rects[0]
+
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'button': 1, 'pos': rect.center})
+        action = view.handle_event(event, rect.center)
+        self.assertEqual(action, "none")
+        self.assertFalse(combat.can_play_card(anger))
+
 if __name__ == "__main__":
     unittest.main()
 
