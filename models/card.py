@@ -42,7 +42,7 @@ class Card:
         self.rarity = rarity
         self.target_type = target_type
         self.description = description
-        self.exhaust = exhaust
+        self.exhaust = True if card_type == CardType.POWER else exhaust
         self.innate = innate
         self.character = character if character is not None else getattr(self.__class__, 'character', None)
         self.upgraded = False
@@ -190,36 +190,38 @@ class SeeingRedCard(Card):
 
 class WarcryCard(Card):
     def __init__(self):
-        super().__init__("warcry", "Warcry", 0, CardType.SKILL, CardRarity.COMMON,
-                         TargetType.SELF, "Draw 1 card. Gain 4 Block.")
+        super().__init__("warcry", "Warcry", 1, CardType.SKILL, CardRarity.COMMON,
+                         TargetType.SELF, "Gain 6 Block. Draw 1 card.")
         self.draw_count = 1
-        self.block_val = 4
+        self.block_val = 6
 
     def apply_upgrade(self):
         self.draw_count = 2
-        self.block_val = 6
-        self.description = "Draw 2 cards. Gain 6 Block."
+        self.block_val = 9
+        self.description = "Gain 9 Block. Draw 2 cards."
 
     def play(self, combat_state, player, target=None):
-        player.draw_cards(self.draw_count)
         blk = self.get_calculated_block(player, self.block_val)
         player.gain_block(blk)
+        player.draw_cards(self.draw_count)
         combat_state.spawn_block_fx(player.x + 60, player.y + 70)
 
 class ShadowstepCard(Card):
     def __init__(self):
-        super().__init__("shadowstep", "Shadowstep", 0, CardType.SKILL, CardRarity.COMMON,
-                         TargetType.SELF, "Gain 4 Block. Draw 1 card.")
-        self.block_val = 4
+        super().__init__("shadowstep", "Shadowstep", 1, CardType.SKILL, CardRarity.COMMON,
+                         TargetType.SELF, "Gain 6 Block. Draw 1 card.")
+        self.block_val = 6
+        self.draw_count = 1
 
     def apply_upgrade(self):
-        self.block_val = 7
-        self.description = "Gain 7 Block. Draw 1 card."
+        self.block_val = 9
+        self.draw_count = 2
+        self.description = "Gain 9 Block. Draw 2 cards."
 
     def play(self, combat_state, player, target=None):
         blk = self.get_calculated_block(player, self.block_val)
         player.gain_block(blk)
-        player.draw_cards(1)
+        player.draw_cards(self.draw_count)
         combat_state.spawn_block_fx(player.x + 60, player.y + 70)
 
 class GougeCard(Card):
@@ -393,7 +395,7 @@ class BladeDanceCard(Card):
 
     def play(self, combat_state, player, target=None):
         for _ in range(self.count):
-            player.hand.append(ShivCard())
+            player.add_card_to_hand(ShivCard())
 
 class CloakAndDaggerCard(Card):
     def __init__(self):
@@ -412,7 +414,7 @@ class CloakAndDaggerCard(Card):
         player.gain_block(blk)
         combat_state.spawn_block_fx(player.x + 60, player.y + 70)
         for _ in range(self.shiv_count):
-            player.hand.append(ShivCard())
+            player.add_card_to_hand(ShivCard())
 
 class AccuracyCard(Card):
     def __init__(self):
@@ -456,7 +458,7 @@ class StormOfSteelCard(Card):
             shiv = ShivCard()
             if self.upgraded:
                 shiv.upgrade()
-            player.hand.append(shiv)
+            player.add_card_to_hand(shiv)
 
 class FinisherCard(Card):
     def __init__(self):
@@ -816,8 +818,10 @@ class ExhumationCard(Card):
         self.description = "Put a card from your Exhaust pile into your hand. Exhaust."
 
     def play(self, combat_state, player, target=None):
-        if player.exhaust_pile:
-            chosen = player.exhaust_pile.pop()
+        valid = [c for c in player.exhaust_pile if c.id_name != "exhumation" and c.card_type != CardType.POWER]
+        if valid and len(player.hand) < player.max_hand_size:
+            chosen = valid.pop()
+            player.exhaust_pile.remove(chosen)
             player.hand.append(chosen)
             combat_state.spawn_buff_fx(player.x + 60, player.y + 60)
 
@@ -918,21 +922,28 @@ class LimitBreakCard(Card):
             combat_state.spawn_buff_fx(player.x + 60, player.y + 60)
 
 class AngerCard(Card):
-    def __init__(self):
+    def __init__(self, is_copy: bool = False):
+        self.is_copy = is_copy
+        desc = "Deal 6 damage. Exhaust. (Max 3/turn)" if is_copy else "Deal 6 damage. Add a copy to discard that Exhausts. (Max 3/turn)"
         super().__init__("anger", "Anger", 0, CardType.ATTACK, CardRarity.COMMON,
-                         TargetType.ENEMY, "Deal 6 damage. Add a copy of Anger to discard.")
+                         TargetType.ENEMY, desc, exhaust=is_copy)
         self.damage = 6
 
     def apply_upgrade(self):
         self.damage = 8
-        self.description = "Deal 8 damage. Add a copy of Anger+ to discard."
+        desc = "Deal 8 damage. Exhaust. (Max 3/turn)" if self.is_copy else "Deal 8 damage. Add a copy to discard that Exhausts. (Max 3/turn)"
+        self.description = desc
 
     def play(self, combat_state, player, target=None):
         if target:
             dmg = self.get_calculated_damage(player, self.damage)
             combat_state.deal_attack_damage(player, target, dmg)
-            copy_card = self.clone()
-            player.discard_pile.append(copy_card)
+            combat_state.anger_plays_this_turn += 1
+            if not self.is_copy:
+                copy_card = AngerCard(is_copy=True)
+                if self.upgraded:
+                    copy_card.upgrade()
+                player.discard_pile.append(copy_card)
 
 class WhirlwindCard(Card):
     def __init__(self):
@@ -996,7 +1007,7 @@ class AbyssalEchoCard(Card):
 class EnvenomCard(Card):
     def __init__(self):
         super().__init__("envenom", "Envenom", 2, CardType.POWER, CardRarity.RARE,
-                         TargetType.SELF, "Whenever an Attack deals unblocked damage, apply 1 Poison.")
+                         TargetType.SELF, "Whenever an Attack deals unblocked damage, apply 1 Poison.", exhaust=True)
         self.poison_amt = 1
 
     def apply_upgrade(self):
@@ -1387,17 +1398,18 @@ class HeavensFuryCard(Card):
 
 class DivineFavorCard(Card):
     def __init__(self):
-        super().__init__("divine_favor", "Divine Favor", 0, CardType.SKILL, CardRarity.UNCOMMON,
-                         TargetType.SELF, "Draw 2 cards and gain 4 Block.")
-        self.block_val = 4
+        super().__init__("divine_favor", "Divine Favor", 1, CardType.SKILL, CardRarity.UNCOMMON,
+                         TargetType.SELF, "Draw 2 cards and gain 5 Block.")
+        self.block_val = 5
 
     def apply_upgrade(self):
-        self.block_val = 7
-        self.description = "Draw 2 cards and gain 7 Block."
+        self.block_val = 8
+        self.description = "Draw 2 cards and gain 8 Block."
 
     def play(self, combat_state, player, target=None):
         player.draw_cards(2)
-        player.gain_block(self.block_val)
+        blk = self.get_calculated_block(player, self.block_val)
+        player.gain_block(blk)
         combat_state.spawn_block_fx(player.x + 60, player.y + 70)
 
 class JudgmentCard(Card):

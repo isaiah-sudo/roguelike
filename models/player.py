@@ -18,6 +18,7 @@ from models.relic import (
 )
 from models.potion import HealthPotion
 from engine.sound import play_sfx
+from settings import MAX_HAND_SIZE
 
 class Player(Entity):
     def __init__(self, char_id: str = "blood_knight"):
@@ -54,6 +55,7 @@ class Player(Entity):
         self.hand = []
         self.discard_pile = []
         self.exhaust_pile = []
+        self.max_hand_size = MAX_HAND_SIZE
 
         # Relics and Potions
         self.relics: list[Relic] = []
@@ -148,8 +150,17 @@ class Player(Entity):
         # Draw hand (default 5 cards)
         self.draw_cards(5)
 
+    def add_card_to_hand(self, card) -> bool:
+        """Adds a card directly to hand if under max hand size limit."""
+        if len(self.hand) < self.max_hand_size:
+            self.hand.append(card)
+            return True
+        return False
+
     def draw_cards(self, count: int):
         for _ in range(count):
+            if len(self.hand) >= self.max_hand_size:
+                break
             if not self.draw_pile:
                 if not self.discard_pile:
                     break

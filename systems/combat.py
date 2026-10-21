@@ -56,6 +56,7 @@ class CombatState:
         self.player.init_combat()
         self.times_player_damaged = 0
         self.cards_exhausted_this_combat = 0
+        self.anger_plays_this_turn = 0
 
         # Decide enemy initial intents
         for enemy in self.enemies:
@@ -73,13 +74,14 @@ class CombatState:
         self.cards_played_this_turn = 0
         self.attacks_played_this_turn = 0
         self.skills_played_this_turn = 0
+        self.anger_plays_this_turn = 0
         
         self.player.start_turn()
 
-        # Infinite Blades power: add 1 Shiv to hand
+        # Infinite Blades power: add 1 Shiv to hand if space permits
         if self.player.statuses.has("InfiniteBlades"):
             from models.card import ShivCard
-            self.player.hand.append(ShivCard())
+            self.player.add_card_to_hand(ShivCard())
 
         # Trigger relics turn start
         for relic in self.player.relics:
@@ -103,6 +105,8 @@ class CombatState:
 
     def can_play_card(self, card: Card) -> bool:
         if self.phase != "player_turn":
+            return False
+        if card.id_name == "anger" and self.anger_plays_this_turn >= 3:
             return False
         return self.player.energy >= self.get_card_cost(card)
 
@@ -154,7 +158,8 @@ class CombatState:
             card.play(self, self.player, target)
 
         # Corruption synergy: force skills to exhaust
-        is_exhaust = card.exhaust or (self.player.statuses.has("Corruption") and card.card_type == CardType.SKILL)
+        # Power cards (purple cards) always exhaust when played so they are never redrawn
+        is_exhaust = card.exhaust or card.card_type == CardType.POWER or (self.player.statuses.has("Corruption") and card.card_type == CardType.SKILL)
 
         if is_exhaust:
             self.exhaust_card(card)
@@ -231,6 +236,14 @@ class CombatState:
         if fb > 0 and attacker.is_alive():
             att_hp, _ = attacker.take_damage(fb, is_attack=False)
             self.particle_mgr.spawn_popup(attacker.x + 30, attacker.y + 20, f"-{fb} Flame", (255, 120, 40))
+
+        # Envenom response: whenever player's Attack deals unblocked damage to an enemy, apply Poison
+        if attacker == self.player and defender != self.player and hp_loss > 0 and defender.is_alive():
+            envenom = attacker.statuses.get("Envenom")
+            if envenom > 0:
+                defender.statuses.apply("Poison", envenom)
+                self.spawn_poison_fx(cx, cy)
+                self.particle_mgr.spawn_popup(cx + 25, cy - 20, f"+{envenom} Poison", (100, 240, 80))
 
         # Check deaths immediately for corpse explosion
         if not defender.is_alive():

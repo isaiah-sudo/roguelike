@@ -38,7 +38,8 @@ STATUS_METADATA = {
     "DemonForm": ("Demon Form", False, "At start of turn, gain Strength."),
     "Intangible": ("Intangible", False, "All damage taken is reduced to 1."),
     "Rage": ("Rage", False, "Whenever you take damage, gain Strength."),
-    "AbyssalEcho": ("Abyssal Echo", False, "The first card played each turn is played twice.")
+    "AbyssalEcho": ("Abyssal Echo", False, "The first card played each turn is played twice."),
+    "Envenom": ("Envenom", False, "Whenever an Attack deals unblocked damage, apply Poison.")
 }
 
 class StatusManager:

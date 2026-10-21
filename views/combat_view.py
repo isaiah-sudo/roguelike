@@ -80,6 +80,9 @@ class CombatView:
                                 else:
                                     self.state.play_card(card)
                                     self.hovered_card_idx = -1
+                            elif card.id_name == "anger" and self.state.anger_plays_this_turn >= 3:
+                                self.state.particle_mgr.spawn_popup(self.state.player.x + 50, self.state.player.y - 10, "Anger Limit (3/turn)!", (255, 120, 100))
+                                play_sfx('debuff', 0.5)
                             break
                 elif event.button == 3:  # Right click cancels
                     self.state.selected_card = None
@@ -124,9 +127,10 @@ class CombatView:
             self.card_elevations.pop()
 
         base_y = 505
-        total_width = 840
-        spacing = min(CARD_WIDTH + 18, total_width / max(1, num_cards))
-        start_x = 640 - (spacing * (num_cards - 1) + CARD_WIDTH) / 2
+        total_width = 780
+        spacing = min(CARD_WIDTH + 14, total_width / max(1, num_cards))
+        center_x = 580
+        start_x = center_x - (spacing * (num_cards - 1) + CARD_WIDTH) / 2
 
         results = []
         for i, card in enumerate(hand):

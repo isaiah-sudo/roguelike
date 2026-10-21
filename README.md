@@ -7,6 +7,22 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 
 ---
 
+## 🚀 What's New in v1.6.2
+- **Envenom Overhaul**:
+  - Fully implemented the missing Envenom status pipeline: Attacks dealing unblocked damage now consistently apply Poison stacks equal to Envenom stacks, with animated toxic particle effects and popups.
+- **Maximum Hand Limit (10 Cards)**:
+  - Capped active hand size to 10 cards across all draw mechanics, card generation spells (Blade Dance, Cloak & Dagger, Storm of Steel), and relic triggers.
+  - Re-centered hand rendering layout in combat to prevent 10-card hands from overlapping the End Turn button.
+- **Power Cards Exhaust on Cast**:
+  - All Power cards (rendered with purple banners) now exhaust upon resolution so persistent combat powers are consumed and never cycled back into the draw pile.
+- **Anger Infinite Loop Prevention**:
+  - Duplicated copies of Anger now possess Exhaust and do not chain-duplicate.
+  - Added a maximum cap of 3 Anger casts per turn with interactive visual feedback if exceeded.
+- **Rebalanced Block + Card Draw**:
+  - `Warcry`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 6) to 6 Block, Draw 1 (upgraded 9 Block, Draw 2).
+  - `Shadowstep`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 7) to 6 Block, Draw 1 (upgraded 9 Block, Draw 2).
+  - `Divine Favor`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 7) to Draw 2, Gain 5 Block (upgraded Draw 2, Gain 8 Block), with full Dexterity scaling.
+
 ## 🚀 What's New in v1.6.1
 - **Handcrafted Vector Character & Enemy Art Overhaul**:
   - Replaced AI-generated bitmap cutouts with detailed, procedural vector art tailored to the game's gothic dark fantasy aesthetic (zero AI artifacts or clashing photorealism).
@@ -19,9 +35,9 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 - **Vector Character Select Portraits**:
   - Framed vector portraits on character select cards matching in-game battle avatars.
 
-## 📦 Downloads (v1.6.1)
-- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.6.1.exe`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.1/CryptOfTheNecrolord_Setup_v1.6.1.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
-- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.6.1_win64.zip`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.1/CryptOfTheNecrolord_v1.6.1_win64.zip)** *(Extract & play directly without installation)*
+## 📦 Downloads (v1.6.2)
+- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.6.2.exe`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.2/CryptOfTheNecrolord_Setup_v1.6.2.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
+- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.6.2_win64.zip`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.2/CryptOfTheNecrolord_v1.6.2_win64.zip)** *(Extract & play directly without installation)*
 
 ---
 

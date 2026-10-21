@@ -20,7 +20,8 @@ from models.card import (
     DarkEmbraceCard, CorruptionCard, SecondWindCard, ShivCard,
     BladeDanceCard, AccuracyCard, FinisherCard, DoubleTapCard,
     BurstCard, CorpseExplosionCard, NeutralizeCard, LimitBreakCard,
-    WraithFormCard, SoulDrainCard, AngerCard
+    WraithFormCard, SoulDrainCard, AngerCard, EnvenomCard,
+    ShadowstepCard, DivineFavorCard, DemonFormCard, NoxiousFumesCard
 )
 from models.relic import (
     BurningBloodRelic, RingOfTheSerpentRelic, SoulPhylacteryRelic,
@@ -937,6 +938,175 @@ class TestRoguelikeGameplay(unittest.TestCase):
         reward = CombatReward(is_elite=True, is_boss=False, act=1, char_id="blood_knight")
         rv = RewardView(reward, player)
         rv.draw(surf)
+
+    def test_envenom_mechanic(self):
+        """Verifies Envenom applies poison on unblocked attack damage and respects block."""
+        player = Player(char_id="shadow_assassin")
+        cultist = CryptCultist()
+        combat = CombatState(player, [cultist], self.particle_mgr, self.screen_shake)
+        player.energy = 5
+
+        envenom = EnvenomCard()
+        player.hand.append(envenom)
+        combat.play_card(envenom)
+        self.assertEqual(player.statuses.get("Envenom"), 1)
+
+        # 1. Unblocked attack damage applies poison
+        initial_poison = cultist.statuses.get("Poison")
+        strike = StrikeCard()
+        player.hand.append(strike)
+        combat.play_card(strike, cultist)
+        self.assertEqual(cultist.statuses.get("Poison"), initial_poison + 1)
+
+        # 2. Blocked attack damage does NOT apply poison
+        cultist.block = 50
+        prev_poison = cultist.statuses.get("Poison")
+        strike2 = StrikeCard()
+        player.hand.append(strike2)
+        combat.play_card(strike2, cultist)
+        self.assertEqual(cultist.statuses.get("Poison"), prev_poison)
+
+    def test_hand_size_limit(self):
+        """Verifies maximum hand size is capped at 10 and cannot be exceeded by draw or generation."""
+        player = Player(char_id="shadow_assassin")
+        cultist = CryptCultist()
+        combat = CombatState(player, [cultist], self.particle_mgr, self.screen_shake)
+
+        # Fill hand to 9 cards
+        player.hand = [StrikeCard() for _ in range(9)]
+        player.draw_pile = [StrikeCard() for _ in range(5)]
+        self.assertEqual(len(player.hand), 9)
+
+        # Draw 3 cards - only 1 should be added before hitting limit of 10
+        player.draw_cards(3)
+        self.assertEqual(len(player.hand), 10)
+
+        # Attempting to draw more does not increase hand
+        player.draw_cards(2)
+        self.assertEqual(len(player.hand), 10)
+
+        # Shiv generation via BladeDance also respects 10 hand limit
+        bd = BladeDanceCard()
+        player.hand.pop()  # hand now at 9
+        player.hand.append(bd)  # hand at 10
+        player.energy = 3
+        combat.play_card(bd)  # plays bd (hand drops to 9), tries to add 3 shivs -> hand reaches 10
+        self.assertLessEqual(len(player.hand), 10)
+
+    def test_power_cards_exhaust_when_played(self):
+        """Verifies purple Power cards exhaust when played and are not redrawn on shuffle."""
+        player = Player(char_id="blood_knight")
+        cultist = CryptCultist()
+        combat = CombatState(player, [cultist], self.particle_mgr, self.screen_shake)
+        player.energy = 10
+
+        demon_form = DemonFormCard()
+        fumes = NoxiousFumesCard()
+        envenom = EnvenomCard()
+
+        self.assertTrue(demon_form.exhaust)
+        self.assertTrue(fumes.exhaust)
+        self.assertTrue(envenom.exhaust)
+
+        player.hand.extend([demon_form, fumes, envenom])
+        combat.play_card(demon_form)
+        combat.play_card(fumes)
+        combat.play_card(envenom)
+
+        # All 3 power cards should be in exhaust pile, not discard pile
+        self.assertIn(demon_form, player.exhaust_pile)
+        self.assertIn(fumes, player.exhaust_pile)
+        self.assertIn(envenom, player.exhaust_pile)
+        self.assertNotIn(demon_form, player.discard_pile)
+        self.assertNotIn(fumes, player.discard_pile)
+        self.assertNotIn(envenom, player.discard_pile)
+
+    def test_anger_nerf_mechanic(self):
+        """Verifies Anger copy exhausts and Anger cannot be played more than 3 times per turn."""
+        player = Player(char_id="blood_knight")
+        cultist = CryptCultist()
+        combat = CombatState(player, [cultist], self.particle_mgr, self.screen_shake)
+        player.energy = 5
+
+        anger = AngerCard()
+        player.hand.append(anger)
+        self.assertFalse(anger.exhaust)
+
+        # 1. Play Anger once
+        combat.play_card(anger, cultist)
+        self.assertEqual(combat.anger_plays_this_turn, 1)
+
+        # The copy added to discard should have exhaust=True and is_copy=True
+        copies = [c for c in player.discard_pile if getattr(c, 'is_copy', False)]
+        self.assertEqual(len(copies), 1)
+        copy_in_discard = copies[0]
+        self.assertTrue(copy_in_discard.exhaust)
+        self.assertTrue(copy_in_discard.is_copy)
+
+        # 2. Playing the copy exhausts it and does not add another copy
+        discard_len_before = len(player.discard_pile)
+        player.hand.append(copy_in_discard)
+        player.discard_pile.remove(copy_in_discard)
+        combat.play_card(copy_in_discard, cultist)
+        self.assertIn(copy_in_discard, player.exhaust_pile)
+        self.assertEqual(len(player.discard_pile), discard_len_before - 1)
+        self.assertEqual(combat.anger_plays_this_turn, 2)
+
+        # 3. Third play is allowed
+        anger3 = AngerCard()
+        player.hand.append(anger3)
+        self.assertTrue(combat.can_play_card(anger3))
+        combat.play_card(anger3, cultist)
+        self.assertEqual(combat.anger_plays_this_turn, 3)
+
+        # 4. Fourth play in the same turn is blocked!
+        anger4 = AngerCard()
+        player.hand.append(anger4)
+        self.assertFalse(combat.can_play_card(anger4))
+        played = combat.play_card(anger4, cultist)
+        self.assertFalse(played)
+
+        # 5. Starting new turn resets limit
+        combat.end_player_turn()
+        combat.start_player_turn()
+        self.assertEqual(combat.anger_plays_this_turn, 0)
+        self.assertTrue(combat.can_play_card(anger4))
+
+    def test_rebalanced_block_and_draw_cards(self):
+        """Verifies Warcry, Shadowstep, and Divine Favor cost 1 energy and give balanced block/draw."""
+        warcry = WarcryCard()
+        shadowstep = ShadowstepCard()
+        divine_favor = DivineFavorCard()
+
+        # All cost 1 energy
+        self.assertEqual(warcry.cost, 1)
+        self.assertEqual(shadowstep.cost, 1)
+        self.assertEqual(divine_favor.cost, 1)
+
+        # Base values
+        self.assertEqual(warcry.block_val, 6)
+        self.assertEqual(warcry.draw_count, 1)
+
+        self.assertEqual(shadowstep.block_val, 6)
+        self.assertEqual(shadowstep.draw_count, 1)
+
+        self.assertEqual(divine_favor.block_val, 5)
+
+        # Upgraded values
+        warcry.upgrade()
+        shadowstep.upgrade()
+        divine_favor.upgrade()
+
+        self.assertEqual(warcry.cost, 1)
+        self.assertEqual(warcry.block_val, 9)
+        self.assertEqual(warcry.draw_count, 2)
+
+        self.assertEqual(shadowstep.cost, 1)
+        self.assertEqual(shadowstep.block_val, 9)
+        self.assertEqual(shadowstep.draw_count, 2)
+
+        self.assertEqual(divine_favor.cost, 1)
+        self.assertEqual(divine_favor.block_val, 8)
 
 if __name__ == "__main__":
     unittest.main()

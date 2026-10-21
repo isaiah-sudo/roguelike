@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/roguelike'
-    tag = 'v1.6.1'
+    tag = 'v1.6.2'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,36 +42,31 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.6.1 ⚔️🛡️
+        body_text = """# Crypt of the Necrolord v1.6.2 ⚔️🛡️
 
-## 🚀 What's New in v1.6.1
-- **Handcrafted Vector Character & Enemy Art Overhaul**:
-  - Replaced AI-generated bitmap cutouts with detailed, procedural vector art tailored to the game's gothic dark fantasy aesthetic (zero AI artifacts or clashing photorealism).
-  - **Blood Knight**: Multi-tone obsidian and crimson plate armor, spiked great helm, glowing fuller blade, and crimson aura.
-  - **Shadow Assassin**: Hooded stealth cowl, dual poisoned stilettos with toxic edge drips, and shadowy mantle.
-  - **Void Necromancer**: Tattered occult sorcerer robes, demonic horned skull mask, and levitating soul-siphoning phylactery staff.
-  - **Tempest Herald**: Cerulean electric vestments, levitating conduit crystal, and crackling lightning sparks.
-  - **Radiant Templar**: Gilded heavy plate armor, golden sun cross breastplate, holy warhammer, and sun tower shield.
-- **Detailed Enemies & Bosses**:
-  - **Cultists**: Occult hoods, sacrificial daggers, skull amulets, and open grimoires.
-  - **Skeleton Sentinels**: Ribcages, bone broadswords, runic heater shields, and horned iron bascinets.
-  - **Dread Spiders**: Chitinous fangs, multi-jointed barbed legs, venomous mandibles, and multiple glowing eyes.
-  - **Void Reavers**: Muscular abyssal fiends with curved horns and void-forged cleavers.
-  - **Necrolord Malakor**: Towering skeletal boss with golden spiked crown, levitating posture, and skull-tipped relic staff.
-- **Smoother Organic Breathing**:
-  - Character and enemy idle breathing now uses a continuous ease-in-out curve with dynamic ground drop shadows and zero pixel shimmering.
-- **Non-Clipping Intent Icons**:
-  - Enemy action intents float dynamically above horns, crowns, and staves with high clearance badges so they never clip into sprites.
-- **Vector Character Select Portraits**:
-  - Framed, crisp vector portraits on character select cards matching in-game battle avatars.
+## 🚀 What's New in v1.6.2
+- **Envenom Overhaul**:
+  - Fully implemented the missing Envenom status pipeline: Attacks dealing unblocked damage now consistently apply Poison stacks equal to Envenom stacks, with animated toxic particle effects and popups.
+- **Maximum Hand Limit (10 Cards)**:
+  - Capped active hand size to 10 cards across all draw mechanics, card generation spells (Blade Dance, Cloak & Dagger, Storm of Steel), and relic triggers.
+  - Re-centered hand rendering layout in combat to prevent 10-card hands from overlapping the End Turn button.
+- **Power Cards Exhaust on Cast**:
+  - All Power cards (rendered with purple banners) now exhaust upon resolution so persistent combat powers are consumed and never cycled back into the draw pile.
+- **Anger Infinite Loop Prevention**:
+  - Duplicated copies of Anger now possess Exhaust and do not chain-duplicate.
+  - Added a maximum cap of 3 Anger casts per turn with interactive visual feedback if exceeded.
+- **Rebalanced Block + Card Draw**:
+  - `Warcry`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 6) to 6 Block, Draw 1 (upgraded 9 Block, Draw 2).
+  - `Shadowstep`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 7) to 6 Block, Draw 1 (upgraded 9 Block, Draw 2).
+  - `Divine Favor`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 7) to Draw 2, Gain 5 Block (upgraded Draw 2, Gain 8 Block), with full Dexterity scaling.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.1.exe` (Recommended - clean install / upgrade with desktop shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.6.1_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.2.exe` (Recommended - clean install / upgrade with desktop shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.6.2_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.6.1',
+            'name': 'Crypt of the Necrolord v1.6.2',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -91,8 +86,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.6.1.exe',
-        'CryptOfTheNecrolord_v1.6.1_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.6.2.exe',
+        'CryptOfTheNecrolord_v1.6.2_win64.zip'
     ]
 
     for filename in files_to_upload:
