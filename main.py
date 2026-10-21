@@ -169,11 +169,8 @@ class Game:
         self.player.heal(heal_amount)
         play_sfx('victory', 0.8)
 
-        # Advance to the new Act
-        if hasattr(self.dungeon_map, 'advance_to_act'):
-            self.dungeon_map.advance_to_act(self.current_act)
-        else:
-            self.dungeon_map = DungeonMap(num_floors=10, paths_per_floor=3, act=self.current_act)
+        # Generate fresh Dungeon Map for the new Act
+        self.dungeon_map = DungeonMap(num_floors=10, paths_per_floor=3, act=self.current_act)
         self.map_view = MapView(self.dungeon_map, self.player)
         self.state = "MAP"
         self.current_view = self.map_view

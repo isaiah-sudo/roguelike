@@ -103,7 +103,6 @@ def save_game(slot_id: int, player: Player, dungeon_map: DungeonMap, current_act
                 "paths_per_floor": dungeon_map.paths_per_floor,
                 "act": dungeon_map.act,
                 "current_floor": dungeon_map.current_floor,
-                "seed": getattr(dungeon_map, 'seed', 12345678),
                 "act_title": dungeon_map.get_act_title() if hasattr(dungeon_map, 'get_act_title') else f"Act {current_act}",
                 "cumulative_floor": dungeon_map.get_cumulative_floor() if hasattr(dungeon_map, 'get_cumulative_floor') else dungeon_map.current_floor + 1,
                 "current_node": (
@@ -123,24 +122,7 @@ def save_game(slot_id: int, player: Player, dungeon_map: DungeonMap, current_act
                         for node in fl
                     ]
                     for fl in dungeon_map.floors
-                ],
-                "act_maps": {
-                    str(act_k): [
-                        [
-                            {
-                                "floor": node.floor,
-                                "index": node.index,
-                                "node_type": node.node_type.name,
-                                "connections": list(node.connections),
-                                "visited": node.visited,
-                                "available": node.available
-                            }
-                            for node in fl
-                        ]
-                        for fl in act_floors
-                    ]
-                    for act_k, act_floors in getattr(dungeon_map, 'act_maps', {}).items()
-                }
+                ]
             }
         }
 
@@ -213,9 +195,7 @@ def load_game(slot_id: int) -> Optional[dict[str, Any]]:
         dungeon_map.paths_per_floor = m_data.get("paths_per_floor", 3)
         dungeon_map.act = m_data.get("act", data.get("current_act", 1))
         dungeon_map.current_floor = m_data.get("current_floor", 0)
-        dungeon_map.seed = m_data.get("seed", 12345678)
         dungeon_map.floors = []
-        dungeon_map.act_maps = {}
 
         for floor_nodes_data in m_data.get("floors", []):
             floor_nodes = []
@@ -228,29 +208,6 @@ def load_game(slot_id: int) -> Optional[dict[str, Any]]:
                 node.available = bool(n_info.get("available", False))
                 floor_nodes.append(node)
             dungeon_map.floors.append(floor_nodes)
-
-        # Reconstruct act_maps dictionary if saved
-        for act_str, act_floors_data in m_data.get("act_maps", {}).items():
-            act_num = int(act_str)
-            if act_num == dungeon_map.act:
-                dungeon_map.act_maps[act_num] = dungeon_map.floors
-                continue
-            act_floors = []
-            for floor_nodes_data in act_floors_data:
-                f_nodes = []
-                for n_info in floor_nodes_data:
-                    ntype_name = n_info.get("node_type", "MONSTER")
-                    ntype = NodeType[ntype_name] if ntype_name in NodeType.__members__ else NodeType.MONSTER
-                    node = MapNode(n_info["floor"], n_info["index"], ntype)
-                    node.connections = list(n_info.get("connections", []))
-                    node.visited = bool(n_info.get("visited", False))
-                    node.available = bool(n_info.get("available", False))
-                    f_nodes.append(node)
-                act_floors.append(f_nodes)
-            dungeon_map.act_maps[act_num] = act_floors
-
-        if dungeon_map.act not in dungeon_map.act_maps:
-            dungeon_map.act_maps[dungeon_map.act] = dungeon_map.floors
 
         curr_n_info = m_data.get("current_node")
         if curr_n_info and curr_n_info.get("floor") is not None and curr_n_info.get("index") is not None:
