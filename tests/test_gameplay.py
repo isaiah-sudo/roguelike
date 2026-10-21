@@ -1130,6 +1130,153 @@ class TestRoguelikeGameplay(unittest.TestCase):
         self.assertEqual(action, "none")
         self.assertFalse(combat.can_play_card(anger))
 
+    def test_multi_act_dungeon_map_generation_and_advance(self):
+        """Verifies multi-act floor generation, determinism with seed, and advance_to_act."""
+        map1 = DungeonMap(num_floors=10, paths_per_floor=3, act=1, seed=4242)
+        act1_floors = map1.get_act_floors(1)
+        act2_floors = map1.get_act_floors(2)
+        act3_floors = map1.get_act_floors(3)
+
+        self.assertEqual(len(act1_floors), 10)
+        self.assertEqual(len(act2_floors), 10)
+        self.assertEqual(len(act3_floors), 10)
+
+        # Act 1 boss on top floor
+        self.assertEqual(act1_floors[-1][0].node_type, NodeType.BOSS)
+        self.assertEqual(act2_floors[-1][0].node_type, NodeType.BOSS)
+
+        # Determinism check
+        map2 = DungeonMap(num_floors=10, paths_per_floor=3, act=1, seed=4242)
+        act2_floors_dup = map2.get_act_floors(2)
+        for f in range(10):
+            types1 = [n.node_type for n in act2_floors[f]]
+            types2 = [n.node_type for n in act2_floors_dup[f]]
+            self.assertEqual(types1, types2)
+
+        # Advance to Act 2
+        first_node = act1_floors[0][0]
+        map1.select_node(first_node)
+        self.assertTrue(first_node.visited)
+
+        map1.advance_to_act(2)
+        self.assertEqual(map1.act, 2)
+        self.assertEqual(map1.current_floor, 0)
+        self.assertIn(1, map1.act_maps)
+        # Act 2 floor 0 should now be available
+        self.assertTrue(any(n.available for n in map1.floors[0]))
+
+    def test_multi_act_save_and_load(self):
+        """Verifies that multi-act DungeonMap with seed and act_maps persists through save/load."""
+        from systems.save_manager import save_game, load_game, delete_save
+
+        player = Player(char_id="blood_knight")
+        dungeon_map = DungeonMap(num_floors=10, paths_per_floor=3, act=2, seed=9999)
+        # Ensure Act 1, 2, 3 generated
+        dungeon_map.get_act_floors(1)
+        dungeon_map.get_act_floors(3)
+
+        test_slot = 99
+        try:
+            saved = save_game(test_slot, player, dungeon_map, current_act=2)
+            self.assertTrue(saved)
+
+            loaded_data = load_game(test_slot)
+            self.assertIsNotNone(loaded_data)
+            loaded_player = loaded_data["player"]
+            loaded_map = loaded_data["dungeon_map"]
+            loaded_act = loaded_data["current_act"]
+
+            self.assertEqual(loaded_act, 2)
+            self.assertEqual(loaded_map.act, 2)
+            self.assertEqual(loaded_map.seed, 9999)
+            self.assertIn(1, loaded_map.act_maps)
+            self.assertIn(2, loaded_map.act_maps)
+            self.assertIn(3, loaded_map.act_maps)
+        finally:
+            delete_save(test_slot)
+
+    def test_map_view_multi_act_scrolling_and_interaction(self):
+        """Verifies map view mouse wheel, keyboard, pill jumping, drag panning, and node clicks."""
+        from views.map_view import MapView
+        player = Player(char_id="shadow_assassin")
+        dungeon_map = DungeonMap(num_floors=10, paths_per_floor=3, act=1, seed=123)
+        view = MapView(dungeon_map, player)
+
+        initial_scroll = view.target_scroll_offset
+
+        # 1. Mouse wheel scrolling up reveals higher acts / floors
+        wheel_up_event = pygame.event.Event(pygame.MOUSEWHEEL, {'y': 1, 'x': 0, 'flipped': False})
+        view.handle_event(wheel_up_event, (640, 360))
+        self.assertGreater(view.target_scroll_offset, initial_scroll)
+
+        # Mouse wheel down
+        wheel_down_event = pygame.event.Event(pygame.MOUSEWHEEL, {'y': -2, 'x': 0, 'flipped': False})
+        view.handle_event(wheel_down_event, (640, 360))
+        self.assertLess(view.target_scroll_offset, initial_scroll + 70)
+
+        # 2. Keyboard scrolling
+        view.target_scroll_offset = 0
+        key_up = pygame.event.Event(pygame.KEYDOWN, {'key': pygame.K_UP})
+        view.handle_event(key_up, (640, 360))
+        self.assertEqual(view.target_scroll_offset, 140)
+
+        key_down = pygame.event.Event(pygame.KEYDOWN, {'key': pygame.K_DOWN})
+        view.handle_event(key_down, (640, 360))
+        self.assertEqual(view.target_scroll_offset, 0)
+
+        # 3. Act Jump Pills
+        pills = view._get_act_pills_rects()
+        # Find ACT II pill
+        act2_rect = None
+        for act_id, rect, _ in pills:
+            if act_id == 2:
+                act2_rect = rect
+                break
+        self.assertIsNotNone(act2_rect)
+
+        click_pill = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'button': 1, 'pos': act2_rect.center})
+        view.handle_event(click_pill, act2_rect.center)
+        # Target scroll should jump to Act 2 stride
+        self.assertEqual(view.target_scroll_offset, 626)
+
+        # Click CURRENT pill (act_id == -1)
+        cur_rect = None
+        for act_id, rect, _ in pills:
+            if act_id == -1:
+                cur_rect = rect
+                break
+        self.assertIsNotNone(cur_rect)
+        click_cur = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'button': 1, 'pos': cur_rect.center})
+        view.handle_event(click_cur, cur_rect.center)
+        self.assertEqual(view.target_scroll_offset, 0)
+
+        # 4. Clicking node in Act 2 while player is in Act 1 should be rejected
+        view.target_scroll_offset = 626
+        view.scroll_offset = 626
+        act2_node_pos = view._get_node_position(0, 0, len(dungeon_map.get_act_floors(2)[0]), act=2)
+        click_act2_node = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'button': 1, 'pos': act2_node_pos})
+        res, data = view.handle_event(click_act2_node, act2_node_pos)
+        self.assertEqual(res, "none")
+        self.assertIsNone(data)
+
+        # 5. Clicking available node in Act 1 should enter node
+        view.target_scroll_offset = 0
+        view.scroll_offset = 0
+        act1_avail = [n for n in dungeon_map.floors[0] if n.available][0]
+        act1_node_idx = dungeon_map.floors[0].index(act1_avail)
+        act1_pos = view._get_node_position(0, act1_node_idx, len(dungeon_map.floors[0]), act=1)
+        click_act1_node = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {'button': 1, 'pos': act1_pos})
+        res, node = view.handle_event(click_act1_node, act1_pos)
+        self.assertEqual(res, "enter_node")
+        self.assertEqual(node, act1_avail)
+        self.assertTrue(node.visited)
+
+        # 6. Smooth camera update
+        view.target_scroll_offset = 500
+        view.update(0.1, (640, 360))
+        self.assertGreater(view.scroll_offset, 0)
+        self.assertLessEqual(view.scroll_offset, 500)
+
 if __name__ == "__main__":
     unittest.main()
 

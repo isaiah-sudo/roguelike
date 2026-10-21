@@ -7,6 +7,18 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 
 ---
 
+## 🚀 What's New in v1.6.3
+- **Multi-Act Map Scrolling & Preview**:
+  - **Vertical Spire Navigation**: Freely scroll up through the spire map to preview future acts (**Act II: The Sunken Citadel**, **Act III: The Abyssal Spire**, and **Spire Pinnacle: Malakor's Sanctum**), and scroll down to inspect past achievements.
+  - **Flexible Controls**: Smooth camera panning via mouse wheel, click-and-drag map background panning, or arrow keys (Up / Down / PgUp / PgDn / Home / End).
+  - **Quick Jump Navigation Pills**: Top banner buttons ([ACT I], [ACT II], [ACT III], and [CURRENT]) snap directly to any act or focus instantly back on your current player floor.
+  - **Stone Gateway Dividers & Visual Hierarchy**: Thematic gateway banners separate each act with atmospheric viewport lighting.
+  - **Preview & Path Integrity**: Locked nodes in future acts are styled with preview tooltips and protected from accidental clicks; completed acts preserve historical golden path lines.
+- **Audio & SFX Hardening**:
+  - Resolved an SFX playback error that could cause stability issues in combat and view transitions.
+- **Multi-Act Save State Persistence**:
+  - Run seeds and multi-act floor topologies serialize cleanly to save slots, preserving full dungeon state between sessions.
+
 ## 🚀 What's New in v1.6.2
 - **Envenom Overhaul**:
   - Fully implemented the missing Envenom status pipeline: Attacks dealing unblocked damage now consistently apply Poison stacks equal to Envenom stacks, with animated toxic particle effects and popups.
@@ -35,9 +47,9 @@ Inspired by classics like *Slay the Spire*, **Crypt of the Necrolord** is a turn
 - **Vector Character Select Portraits**:
   - Framed vector portraits on character select cards matching in-game battle avatars.
 
-## 📦 Downloads (v1.6.2)
-- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.6.2.exe`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.2/CryptOfTheNecrolord_Setup_v1.6.2.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
-- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.6.2_win64.zip`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.2/CryptOfTheNecrolord_v1.6.2_win64.zip)** *(Extract & play directly without installation)*
+## 📦 Downloads (v1.6.3)
+- **[Download Windows Setup Installer (`CryptOfTheNecrolord_Setup_v1.6.3.exe`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.3/CryptOfTheNecrolord_Setup_v1.6.3.exe)** *(Recommended: Installs or cleanly updates existing game with desktop & start menu shortcuts)*
+- **[Download Portable Windows 64-bit Zip (`CryptOfTheNecrolord_v1.6.3_win64.zip`)](https://github.com/isaiah-sudo/roguelike/releases/download/v1.6.3/CryptOfTheNecrolord_v1.6.3_win64.zip)** *(Extract & play directly without installation)*
 
 ---
 

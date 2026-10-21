@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     repo = 'isaiah-sudo/roguelike'
-    tag = 'v1.6.2'
+    tag = 'v1.6.3'
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json',
@@ -42,31 +42,27 @@ def main():
             raise
 
     if not release:
-        body_text = """# Crypt of the Necrolord v1.6.2 ⚔️🛡️
+        body_text = """# Crypt of the Necrolord v1.6.3 ⚔️🛡️
 
-## 🚀 What's New in v1.6.2
-- **Envenom Overhaul**:
-  - Fully implemented the missing Envenom status pipeline: Attacks dealing unblocked damage now consistently apply Poison stacks equal to Envenom stacks, with animated toxic particle effects and popups.
-- **Maximum Hand Limit (10 Cards)**:
-  - Capped active hand size to 10 cards across all draw mechanics, card generation spells (Blade Dance, Cloak & Dagger, Storm of Steel), and relic triggers.
-  - Re-centered hand rendering layout in combat to prevent 10-card hands from overlapping the End Turn button.
-- **Power Cards Exhaust on Cast**:
-  - All Power cards (rendered with purple banners) now exhaust upon resolution so persistent combat powers are consumed and never cycled back into the draw pile.
-- **Anger Infinite Loop Prevention**:
-  - Duplicated copies of Anger now possess Exhaust and do not chain-duplicate.
-  - Added a maximum cap of 3 Anger casts per turn with interactive visual feedback if exceeded.
-- **Rebalanced Block + Card Draw**:
-  - `Warcry`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 6) to 6 Block, Draw 1 (upgraded 9 Block, Draw 2).
-  - `Shadowstep`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 7) to 6 Block, Draw 1 (upgraded 9 Block, Draw 2).
-  - `Divine Favor`: Rebalanced from 0 energy to 1 energy; increased block from 4 (upgraded 7) to Draw 2, Gain 5 Block (upgraded Draw 2, Gain 8 Block), with full Dexterity scaling.
+## 🚀 What's New in v1.6.3
+- **Multi-Act Map Scrolling & Preview**:
+  - **Vertical Spire Navigation**: Freely scroll up through the spire map to preview future acts (**Act II: The Sunken Citadel**, **Act III: The Abyssal Spire**, and **Spire Pinnacle: Malakor's Sanctum**), and scroll down to inspect past achievements.
+  - **Flexible Controls**: Smooth camera panning via mouse wheel, click-and-drag map background panning, or arrow keys (`Up` / `Down` / `PgUp` / `PgDn` / `Home` / `End`).
+  - **Quick Jump Navigation Pills**: Top banner buttons (`[ACT I]`, `[ACT II]`, `[ACT III]`, and `[CURRENT]`) snap directly to any act or focus instantly back on your current player floor.
+  - **Stone Gateway Dividers & Visual Hierarchy**: Thematic gateway banners separate each act with atmospheric viewport lighting.
+  - **Preview & Path Integrity**: Locked nodes in future acts are styled with preview tooltips and protected from accidental clicks; completed acts preserve historical golden path lines.
+- **Audio & SFX Hardening**:
+  - Resolved an SFX playback error that could cause stability issues in combat and view transitions.
+- **Multi-Act Save State Persistence**:
+  - Run seeds and multi-act floor topologies serialize cleanly to save slots, preserving full dungeon state between sessions.
 
 ## 📦 Downloads
-- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.2.exe` (Recommended - clean install / upgrade with desktop shortcuts)
-- **Portable Zip**: `CryptOfTheNecrolord_v1.6.2_win64.zip` (Extract & play directly without installation)
+- **Windows Setup Installer**: `CryptOfTheNecrolord_Setup_v1.6.3.exe` (Recommended - clean install / upgrade with desktop shortcuts)
+- **Portable Zip**: `CryptOfTheNecrolord_v1.6.3_win64.zip` (Extract & play directly without installation)
 """
         create_payload = json.dumps({
             'tag_name': tag,
-            'name': 'Crypt of the Necrolord v1.6.2',
+            'name': 'Crypt of the Necrolord v1.6.3',
             'body': body_text,
             'draft': False,
             'prerelease': False
@@ -86,8 +82,8 @@ def main():
     existing_assets = {a['name']: a['id'] for a in release.get('assets', [])}
     output_dir = 'installer_output'
     files_to_upload = [
-        'CryptOfTheNecrolord_Setup_v1.6.2.exe',
-        'CryptOfTheNecrolord_v1.6.2_win64.zip'
+        'CryptOfTheNecrolord_Setup_v1.6.3.exe',
+        'CryptOfTheNecrolord_v1.6.3_win64.zip'
     ]
 
     for filename in files_to_upload:

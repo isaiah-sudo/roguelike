@@ -8,7 +8,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 FPS = 60
 TITLE = "CRYPT OF THE NECROLORD - Dark Fantasy Roguelike"
-GAME_VERSION = "1.6.2"
+GAME_VERSION = "1.6.3"
 GITHUB_REPO = "isaiah-sudo/roguelike"
 
 # Combat Rules

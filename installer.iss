@@ -2,7 +2,7 @@
 ; Dark Fantasy Deckbuilding Roguelike
 
 #define MyAppName "Crypt of the Necrolord"
-#define MyAppVersion "1.6.2"
+#define MyAppVersion "1.6.3"
 #define MyAppPublisher "Dark Spire Studio"
 #define MyAppURL "https://github.com/isaiah-sudo/roguelike"
 #define MyAppUpdatesURL "https://github.com/isaiah-sudo/roguelike/releases"
@@ -32,10 +32,10 @@ PrivilegesRequiredOverridesAllowed=dialog commandline
 DisableDirPage=no
 DisableProgramGroupPage=no
 UninstallDisplayIcon={app}\{#MyAppExeName}
-VersionInfoVersion=1.6.2.0
+VersionInfoVersion=1.6.3.0
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName} Setup
-VersionInfoProductVersion=1.6.2.0
+VersionInfoProductVersion=1.6.3.0
 
 ; Seamless Upgrade & In-Place Update Configuration
 ; Detects previous installation location and settings automatically
